@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MY850 HQ | Real Estate Command Center</title>
+    <!-- Chart.js for visuals -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- External CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-mode">
+    <!-- ================= HEADER ================= -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <span class="logo-icon">🦞</span>
+                <div class="logo-text">
+                    <h1>MY850 HQ</h1>
+                    <span class="logo-tagline">Command Center</span>
+                </div>
+            </div>
+            <nav class="header-nav">
+                <a href="#overview" class="nav-link active">Overview</a>
+                <a href="#leads" class="nav-link">Leads</a>
+                <a href="#team" class="nav-link">Team</a>
+                <a href="#tasks" class="nav-link">Tasks</a>
+                <a href="#analytics" class="nav-link">Analytics</a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="live-clock" id="liveClock">
+                <span class="clock-date">--</span>
+                <span class="clock-time">--:--:--</span>
+            </div>
+            <button class="theme-toggle" id="themeToggle" title="Toggle Dark/Light Mode">
+                <span class="theme-icon">☀️</span>
+            </button>
+            <div class="status-indicator">
+                <span class="status-dot online"></span>
+                <span class="status-text">LIVE</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="main-container">
+        
+        <!-- SECTION 1: OVERVIEW METRICS -->
+        <section id="overview" class="section">
+            <div class="section-header collapsible" data-target="metricsContent">
+                <h2>🎯 Operations Overview</h2>
+                <span class="collapse-icon">▼</span>
+            </div>
+            <div class="section-content" id="metricsContent">
+                <div class="metrics-grid">
+                    <!-- Active Listings -->
+                    <div class="metric-card primary" data-metric="listings">
+                        <div class="metric-icon">🏠</div>
+                        <div class="metric-info">
+                            <div class="metric-label">Active Listings</div>
+                            <div class="metric-value" id="activeListings">--</div>
+                            <div class="metric-trend up">+3 this week</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pipeline Value -->
+                    <div class="metric-card success" data-metric="pipeline">
+                        <div class="metric-icon">💰</div>
+                        <div class="metric-info">
+                            <div class="metric-label">Pipeline Value</div>
+                            <div class="metric-value" id="pipelineValue">$--</div>
+                            <div class="metric-trend up">+12% vs last month</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hot Leads -->
+                    <div class="metric-card danger" data-metric="hotleads">
+                        <div class="metric-icon">🔥</div>
+                        <div class="metric-info">
+                            <div class="metric-label">Hot Leads Today</div>
+                            <div class="metric-value" id="hotLeads">--</div>
+                            <div class="metric-trend hot">Requires action</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Lis Pendens -->
+                    <div class="metric-card warning" data-metric="lis">
+                        <div class="metric-icon">📋</div>
+                        <div class="metric-info">
+                            <div class="metric-label">Lis Pendens (MTD)</div>
+                            <div class="metric-value" id="lisPendens">--</div>
+                            <div class="metric-trend up">+8 new today</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Team Tasks -->
+                    <div class="metric-card purple" data-metric="tasks">
+                        <div class="metric-icon">✅</div>
+                        <div class="metric-info">
+                            <div class="metric-label">Team Tasks</div>
+                            <div class="metric-value" id="teamTasks">--</div>
+                            <div class="metric-trend">-- pending</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Synthflow Calls -->
+                    <div class="metric-card teal" data-metric="calls">
+                        <div class="metric-icon">📞</div>
+                        <div class="metric-info">
+                            <div class="metric-label">Calls Today</div>
+                            <div class="metric-value" id="synthflowCalls">--</div>
+                            <div class="metric-trend">-- answered</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: QUICK FILTERS -->
+        <section class="filters-bar">
+            <div class="filter-group">
+                <label>Filter by:</label>
+                <select id="countyFilter" class="filter-select">
+                    <option value="all">All Counties</option>
+                    <option value="broward">Broward</option>
+                    <option value="miami-dade">Miami-Dade</option>
+                    <option value="palm-beach">Palm Beach</option>
+                    <option value="walton">Walton</option>
+                </select>
+                <select id="gradeFilter" class="filter-select">
+                    <option value="all">All Grades</option>
+                    <option value="A">Grade A (Hot)</option>
+                    <option value="B">Grade B (Warm)</option>
+                    <option value="C">Grade C (Cool)</option>
+                </select>
+                <select id="statusFilter" class="filter-select">
+                    <option value="all">All Status</option>
+                    <option value="new">New</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="appointment">Appointment Set</option>
+                    <option value="listing">Listed</option>
+                </select>
+                <button class="btn btn-primary" id="applyFilters">Apply Filters</button>
+                <button class="btn btn-secondary" id="clearFilters">Clear</button>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-success" onclick="refreshAllData()">🔄 Refresh Data</button>
+                <button class="btn btn-outline" onclick="exportData()">📥 Export CSV</button>
+            </div>
+        </section>
+
+        <!-- SECTION 3: VISUALIZATION ROW -->
+        <section class="charts-section">
+            <div class="chart-container">
+                <div class="section-header collapsible" data-target="gradeChartContainer">
+                    <h3>📊 Lead Grade Distribution</h3>
+                    <span class="collapse-icon">▼</span>
+                </div>
+                <div class="chart-content" id="gradeChartContainer">
+                    <canvas id="gradeChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="section-header collapsible" data-target="pipelineChartContainer">
+                    <h3>📈 Pipeline Trend (30 Days)</h3>
+                    <span class="collapse-icon">▼</span>
+                </div>
+                <div class="chart-content" id="pipelineChartContainer">
+                    <canvas id="pipelineChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="section-header collapsible" data-target="countyChartContainer">
+                    <h3>📍 Leads by County</h3>
+                    <span class="collapse-icon">▼</span>
+                </div>
+                <div class="chart-content" id="countyChartContainer">
+                    <canvas id="countyChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: HOT LEADS TABLE -->
+        <section id="leads" class="section">
+            <div class="section-header collapsible" data-target="leadsTableContent">
+                <h2>🔥 Priority Leads</h2>
+                <div class="section-actions">
+                    <button class="btn btn-sm btn-outline" onclick="sortTable('score')">Sort by Score</button>
+                    <button class="btn btn-sm btn-outline" onclick="sortTable('date')">Sort by Date</button>
+                    <span class="collapse-icon">▼</span>
+                </div>
+            </div>
+            <div class="section-content" id="leadsTableContent">
+                <div class="table-wrapper">
+                    <table id="leadsTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th data-sort="grade">Grade ↕</th>
+                                <th data-sort="name">Lead Name</th>
+                                <th data-sort="property">Property</th>
+                                <th data-sort="phone">Phone</th>
+                                <th data-sort="score">Score</th>
+                                <th data-sort="county">County</th>
+                                <th>Status</th>
+                                <th>Tags</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leadsTableBody">
+                            <!-- Populated by JavaScript -->
+                            <tr class="loading-row">
+                                <td colspan="9" class="loading-cell">
+                                    <div class="loading-spinner"></div>
+                                    <p>Loading leads data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-pagination">
+                    <button class="btn btn-sm" id="prevPage">← Previous</button>
+                    <span id="pageInfo">Page 1 of 1</span>
+                    <button class="btn btn-sm" id="nextPage">Next →</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: TEAM & TASKS -->
+        <div class="split-section">
+            <section id="team" class="section team-section">
+                <div class="section-header collapsible" data-target="teamContent">
+                    <h2>👥 Team Status</h2>
+                    <span class="collapse-icon">▼</span>
+                </div>
+                <div class="section-content" id="teamContent">
+                    <div class="team-grid" id="teamGrid">
+                        <!-- Team member cards populated by JS -->
+                    </div>
+                </div>
+            </section>
+
+            <section id="tasks" class="section tasks-section">
+                <div class="section-header collapsible" data-target="tasksContent">
+                    <h2>📝 My Tasks</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-sm btn-success" onclick="addTask()">+ Add Task</button>
+                        <span class="collapse-icon">▼</span>
+                    </div>
+                </div>
+                <div class="section-content" id="tasksContent">
+                    <div class="task-list" id="taskList">
+                        <!-- Tasks populated by JS -->
+                    </div>
+                    <div class="task-stats">
+                        <span id="taskStats">0 of 0 tasks complete</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="taskProgress"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- SECTION 6: REAL ESTATE MARKET STATS -->
+        <section id="analytics" class="section">
+            <div class="section-header collapsible" data-target="marketStatsContent">
+                <h2>🏘️ Local Market Pulse</h2>
+                <span class="collapse-icon">▼</span>
+            </div>
+            <div class="section-content" id="marketStatsContent">
+                <div class="market-grid">
+                    <div class="market-card">
+                        <div class="market-label">Avg. Sale Price</div>
+                        <div class="market-value">$485,000</div>
+                        <div class="market-change up">+3.2% YoY</div>
+                    </div>
+                    <div class="market-card">
+                        <div class="market-label">Days on Market</div>
+                        <div class="market-value">18</div>
+                        <div class="market-change down">-2 days vs last month</div>
+                    </div>
+                    <div class="market-card">
+                        <div class="market-label">New Listings (30d)</div>
+                        <div class="market-value">127</div>
+                        <div class="market-change up">+12% vs last month</div>
+                    </div>
+                    <div class="market-card">
+                        <div class="market-label">Pending Sales</div>
+                        <div class="market-value">89</div>
+                        <div class="market-change up">+5 this week</div>
+                    </div>
+                </div>
+                <div class="market-chart-container">
+                    <canvas id="marketTrendChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>🏠 MY850 Real Estate Team</h4>
+                <p>Panama City Beach, Florida</p>
+                <p>Established 1987 | 35+ Years Experience</p>
+            </div>
+            <div class="footer-section">
+                <h4>🔗 Quick Links</h4>
+                <nav class="footer-nav">
+                    <a href="https://docs.google.com/spreadsheets/d/1o7DQGa_Jum0nNKpQUV9fiWXOeAmma9vs4twDTqPCMJ0/edit" target="_blank">Master Sheet</a>
+                    <a href="https://synthflow.ai" target="_blank">Synthflow</a>
+                    <a href="https://gohighlevel.com" target="_blank">HighLevel</a>
+                    <a href="#" onclick="showSettings()">Dashboard Settings</a>
+                </nav>
+            </div>
+            <div class="footer-section">
+                <h4>📊 System Status</h4>
+                <p class="status-line">
+                    <span class="status-dot online"></span>
+                    All Systems Operational
+                </p>
+                <p>Last Sync: <span id="lastSync">--</span></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 MY850 Real Estate Team. Internal Use Only.</p>
+            <p class="disclaimer">🔒 This dashboard contains confidential lead data. Authorized personnel only.</p>
+        </div>
+    </footer>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- External JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>
