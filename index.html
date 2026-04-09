@@ -12,6 +12,29 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="dark-mode">
+    
+    <!-- ================= PASSWORD LOGIN OVERLAY ================= -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-box">
+            <div class="login-header">
+                <span class="login-icon">🦞</span>
+                <h1>MY850 HQ</h1>
+                <p>Mission Control Dashboard</p>
+            </div>
+            <div class="login-form">
+                <label for="passwordInput">Enter Password</label>
+                <input type="password" id="passwordInput" placeholder="Password" autofocus>
+                <p class="login-hint">Authorized personnel only</p>
+                <button id="loginButton" class="btn btn-primary btn-large">Access Dashboard</button>
+                <p id="loginError" class="login-error"></p>
+            </div>
+            <div class="login-footer">
+                <p>© 2026 MY850 Real Estate Team</p>
+                <p class="login-disclaimer">🔒 Confidential Lead Data — Internal Use Only</p>
+            </div>
+        </div>
+    </div>
+    
     <!-- ================= HEADER ================= -->
     <header class="header">
         <div class="header-left">

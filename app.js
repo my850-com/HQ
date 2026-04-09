@@ -183,6 +183,76 @@ const SAMPLE_DATA = {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🏠 MY850 HQ Dashboard initializing...');
     
+    // Check if user is already logged in (sessionStorage)
+    if (sessionStorage.getItem('hqAuthenticated') === 'true') {
+        // User already authenticated, show dashboard
+        hideLoginOverlay();
+        initDashboard();
+    } else {
+        // Show login first
+        initLogin();
+    }
+});
+
+function initLogin() {
+    const password = 'Sherlock';
+    const loginButton = document.getElementById('loginButton');
+    const passwordInput = document.getElementById('passwordInput');
+    const loginError = document.getElementById('loginError');
+    
+    if (!loginButton || !passwordInput) {
+        console.error('Login elements not found');
+        return;
+    }
+    
+    // Focus on password input
+    passwordInput.focus();
+    
+    // Handle login on button click
+    loginButton.addEventListener('click', () => {
+        checkPassword(passwordInput.value, password, loginError);
+    });
+    
+    // Handle enter key
+    passwordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            checkPassword(passwordInput.value, password, loginError);
+        }
+    });
+}
+
+function checkPassword(input, correct, errorElement) {
+    if (input === correct) {
+        // Success!
+        sessionStorage.setItem('hqAuthenticated', 'true');
+        hideLoginOverlay();
+        initDashboard();
+        showToast('Welcome to MY850 HQ', 'success');
+    } else {
+        // Failed
+        if (errorElement) {
+            errorElement.textContent = 'Incorrect password. Please try again.';
+            errorElement.style.display = 'block';
+        }
+        const passwordInput = document.getElementById('passwordInput');
+        if (passwordInput) {
+            passwordInput.value = '';
+            passwordInput.focus();
+        }
+    }
+}
+
+function hideLoginOverlay() {
+    const overlay = document.getElementById('loginOverlay');
+    if (overlay) {
+        overlay.classList.add('login-hidden');
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 500);
+    }
+}
+
+function initDashboard() {
     // Initialize all dashboard components
     initClock();
     initThemeToggle();
@@ -195,8 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(refreshDashboard, CONFIG.refreshInterval);
     
     console.log('✅ Dashboard ready');
-    showToast('Dashboard loaded successfully', 'success');
-});
+}
 
 // ================= LIVE CLOCK =================
 function initClock() {
