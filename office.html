@@ -487,7 +487,7 @@
     
     <header class="header">
         <div class="header-left">
-            <span class="logo-icon">🤖</span>
+            <img src="sherlock-avatar.png" alt="Sherlock" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px;">
             <div>
                 <h1>Agent Office</h1>
                 <p>Status, Tools & System Health</p>
@@ -502,7 +502,7 @@
         <div class="status-grid">
             <!-- Agent Card -->
             <div class="agent-card">
-                <div class="agent-avatar">🦞</div>
+                <img src="sherlock-avatar.png" alt="Sherlock" class="agent-avatar" style="width: 100px; height: 100px; object-fit: cover;">
                 <div class="agent-name">Sherlock</div>
                 <div class="agent-role">Lead AI Agent</div>
                 <span class="agent-status active">Online</span>
@@ -551,13 +551,13 @@
             </div>
         </div>
         
-        <!-- Available Skills -->
+        <!-- Production Skills -->
         <section class="section">
             <div class="section-header">
-                <h2>🛠️ Available Skills</h2>
+                <h2>✅ Production Skills</h2>
                 <span class="live-indicator">
                     <div class="live-dot"></div>
-                    <span>All Systems Ready</span>
+                    <span>Fully Tested & Ready</span>
                 </span>
             </div>
             
@@ -566,53 +566,63 @@
                     <div class="skill-status ready"></div>
                     <div class="skill-icon">📊</div>
                     <div class="skill-name">Lis Pendens Scoring</div>
-                    <div class="skill-desc">Automatically score leads from CSV files. Identifies absentee owners, ranks by priority (A/B/C/D).</div>
-                    <span class="skill-trigger">Trigger: "MVP" or upload CSV</span>
-                    <button class="skill-action" onclick="alert('Say MVP or upload a CSV file')">How to Use</button>
+                    <div class="skill-desc">Automatically score leads from CSV files. Identifies absentee owners, ranks by priority A/B/C/D. Generates scored CSV.</div>
+                    <span class="skill-trigger">Say "MVP" + upload CSV</span>
+                    <button class="skill-action" onclick="alert('Say MVP or upload a Lis Pendens CSV file')">How to Use</button>
                 </div>
                 
                 <div class="skill-card">
                     <div class="skill-status ready"></div>
                     <div class="skill-icon">📝</div>
                     <div class="skill-name">YouTube Transcript</div>
-                    <div class="skill-desc">Extract transcripts from any YouTube video without API keys. Get clean text or timestamped output.</div>
-                    <span class="skill-trigger">Usage: Provide YouTube URL</span>
+                    <div class="skill-desc">Extract transcripts from any YouTube video without API keys. Returns clean text or timestamped output.</div>
+                    <span class="skill-trigger">Provide YouTube URL</span>
                     <button class="skill-action" onclick="alert('Give me a YouTube URL to transcribe')">Try It</button>
-                </div>
-                
-                <div class="skill-card">
-                    <div class="skill-status ready"></div>
-                    <div class="skill-icon">📧</div>
-                    <div class="skill-name">AgentMail</div>
-                    <div class="skill-desc">Send emails programmatically via my850@agentmail.to inbox. Used for hot sheet reminders and automated workflows.</div>
-                    <span class="skill-trigger">Inbox: my850@agentmail.to</span>
-                    <button class="skill-action" onclick="alert('I can send emails on your behalf')">Test</button>
                 </div>
                 
                 <div class="skill-card">
                     <div class="skill-status ready"></div>
                     <div class="skill-icon">📓</div>
                     <div class="skill-name">Daily Journal</div>
-                    <div class="skill-desc">Auto-generates nightly summaries of all activity, decisions, and files created. Improves memory across sessions.</div>
+                    <div class="skill-desc">Auto-generates nightly summaries of activity, decisions, files created. Feeds into long-term MEMORY.md.</div>
                     <span class="skill-trigger">Auto-runs at 9:00 PM</span>
-                    <button class="skill-action" onclick="window.open('../memory/journals/', '_blank')">View Logs</button>
+                    <button class="skill-action" onclick="window.open('https://my850-com.github.io/backup/memory/journals/', '_blank')">View Logs</button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Internal Tools -->
+        <section class="section">
+            <div class="section-header">
+                <h2>🔧 Internal Tools</h2>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Functional but not formal skills yet</span>
+            </div>
+            
+            <div class="skills-grid">
+                <div class="skill-card">
+                    <div class="skill-status beta"></div>
+                    <div class="skill-icon">📧</div>
+                    <div class="skill-name">AgentMail</div>
+                    <div class="skill-desc">Send emails via my850@agentmail.to. Used for hot sheet reminders and automated workflows. API configured.</div>
+                    <span class="skill-trigger">Inbox: my850@agentmail.to</span>
+                    <button class="skill-action" onclick="alert('I can send emails via message tool')">Info</button>
                 </div>
                 
                 <div class="skill-card">
-                    <div class="skill-status ready"></div>
+                    <div class="skill-status beta"></div>
                     <div class="skill-icon">📄</div>
                     <div class="skill-name">Letter Generation</div>
-                    <div class="skill-desc">Generate marketing letters from scored leads. Creates PDF batches ready for mailing.</div>
-                    <span class="skill-trigger">Auto-runs with MVP</span>
-                    <button class="skill-action" onclick="alert('Runs automatically after scoring')">Info</button>
+                    <div class="skill-desc">Generate marketing letter PDFs from scored leads. Creates batches for mailing. Auto-runs with MVP.</div>
+                    <span class="skill-trigger">Auto-runs after scoring</span>
+                    <button class="skill-action" onclick="alert('Triggered automatically by MVP workflow')">Info</button>
                 </div>
                 
                 <div class="skill-card">
                     <div class="skill-status beta"></div>
                     <div class="skill-icon">⚙️</div>
-                    <div class="skill-name">GitHub Integration</div>
-                    <div class="skill-desc">Push changes to repositories, manage code, track commits. Currently configured for HQ and backup repos.</div>
-                    <span class="skill-trigger">Internal use only</span>
+                    <div class="skill-name">Git Operations</div>
+                    <div class="skill-desc">Push code to GitHub repos, manage commits. Used for HQ dashboard updates and workspace backups.</div>
+                    <span class="skill-trigger">Manual git commands</span>
                     <button class="skill-action" onclick="window.open('https://github.com/my850-com', '_blank')">View Repos</button>
                 </div>
             </div>
@@ -671,12 +681,12 @@
                 </div>
                 
                 <div class="health-item">
-                    <span class="health-icon">📞</span>
+                    <span class="health-icon">🎤</span>
                     <div class="health-info">
-                        <div class="health-name">Synthflow/Retell</div>
+                        <div class="health-name">Voice Component</div>
                         <div class="health-status">
                             <span class="health-dot offline"></span>
-                            <span>Pending voice integration</span>
+                            <span>Pending (you're building this)</span>
                         </div>
                     </div>
                 </div>
