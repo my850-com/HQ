@@ -966,3 +966,16 @@ body {
     background: var(--primary);
     color: white;
 }
+/* Office Dashboard Link */
+.nav-link.office-link {
+    background: linear-gradient(135deg, rgba(46, 80, 144, 0.3), rgba(32, 201, 151, 0.2));
+    border: 1px solid rgba(46, 80, 144, 0.5);
+    color: var(--accent-teal);
+}
+
+.nav-link.office-link:hover {
+    background: linear-gradient(135deg, rgba(46, 80, 144, 0.5), rgba(32, 201, 151, 0.3));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46, 80, 144, 0.3);
+}
+
