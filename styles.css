@@ -979,3 +979,25 @@ body {
     box-shadow: 0 4px 12px rgba(46, 80, 144, 0.3);
 }
 
+/* Clickable Metric Cards */
+.metric-card.clickable {
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.metric-card.clickable:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-glow), 0 0 20px rgba(46, 80, 144, 0.4);
+}
+
+.metric-card.clickable .metric-label::after {
+    content: ' →';
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.metric-card.clickable:hover .metric-label::after {
+    opacity: 1;
+}
+
