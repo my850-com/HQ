@@ -4,184 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listings | MY850 HQ</title>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- External CSS -->
     <link rel="stylesheet" href="styles.css">
-    <!-- Google Sheets Connector -->
-    <script src="sheets-connector.js"></script>
     <style>
-        .listings-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--spacing-xl);
-            padding: var(--spacing-lg);
-            background: var(--bg-secondary);
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
-        }
-        
-        .listings-title h1 {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: var(--spacing-xs);
-        }
-        
-        .listings-title p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-        
-        .back-link {
-            color: var(--accent-teal);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            font-weight: 500;
-            transition: color var(--transition-fast);
-        }
-        
-        .back-link:hover {
-            color: var(--text-primary);
-        }
-        
-        .pipeline-summary {
-            background: linear-gradient(135deg, var(--success), #34ce57);
-            border-radius: var(--radius-md);
-            padding: var(--spacing-lg);
-            margin-bottom: var(--spacing-xl);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .pipeline-summary.light-mode {
-            background: linear-gradient(135deg, #28a745, #34ce57);
-        }
-        
-        .pipeline-value-label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.9;
-        }
-        
-        .pipeline-value-number {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-top: var(--spacing-xs);
-        }
-        
-        .pipeline-stats {
-            text-align: right;
-        }
-        
-        .pipeline-stat {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        
-        .listings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: var(--spacing-lg);
-        }
-        
-        .listing-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-        }
-        
-        .listing-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .listing-image {
-            height: 200px;
-            background: var(--bg-tertiary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 4rem;
-        }
-        
-        .listing-content {
-            padding: var(--spacing-lg);
-        }
-        
-        .listing-address {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: var(--spacing-xs);
-            line-height: 1.4;
-        }
-        
-        .listing-location {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin-bottom: var(--spacing-sm);
-        }
-        
-        .listing-price {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--success);
-            margin-bottom: var(--spacing-sm);
-        }
-        
-        .listing-details {
-            display: flex;
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-sm);
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-        
-        .listing-status {
-            display: inline-block;
-            padding: var(--spacing-xs) var(--spacing-sm);
-            border-radius: var(--radius-sm);
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        
-        .status-active {
-            background: rgba(40, 167, 69, 0.2);
-            color: var(--success);
-        }
-        
-        .status-pending {
-            background: rgba(255, 193, 7, 0.2);
-            color: var(--warning);
-        }
-        
-        .status-sold {
-            background: rgba(108, 117, 125, 0.2);
-            color: var(--text-muted);
-        }
-        
-        .loading-listings {
-            text-align: center;
-            padding: var(--spacing-xl);
-            color: var(--text-muted);
-        }
-        
-        .error-message {
-            background: rgba(220, 53, 69, 0.1);
-            border: 1px solid rgba(220, 53, 69, 0.3);
-            color: var(--danger);
-            padding: var(--spacing-lg);
-            border-radius: var(--radius-md);
-            text-align: center;
-        }
+        .listings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-xl); padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border-color); }
+        .listings-title h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: var(--spacing-xs); }
+        .listings-title p { color: var(--text-muted); font-size: 0.9rem; }
+        .back-link { color: var(--accent-teal); text-decoration: none; display: flex; align-items: center; gap: var(--spacing-sm); font-weight: 500; }
+        .back-link:hover { color: var(--text-primary); }
+        .pipeline-summary { background: linear-gradient(135deg, var(--success), #34ce57); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-xl); display: flex; justify-content: space-between; }
+        .pipeline-value-label { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; }
+        .pipeline-value-number { font-size: 2.5rem; font-weight: 800; margin-top: var(--spacing-xs); }
+        .pipeline-stat { font-size: 0.9rem; opacity: 0.9; }
+        .listings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: var(--spacing-lg); }
+        .listing-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; transition: transform var(--transition-fast); }
+        .listing-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+        .listing-image { height: 200px; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; }
+        .listing-image img { width: 100%; height: 100%; object-fit: cover; }
+        .listing-content { padding: var(--spacing-lg); }
+        .listing-address { font-size: 1.1rem; font-weight: 600; margin-bottom: var(--spacing-xs); }
+        .listing-location { color: var(--text-muted); font-size: 0.85rem; margin-bottom: var(--spacing-sm); }
+        .listing-price { font-size: 1.5rem; font-weight: 800; color: var(--success); margin-bottom: var(--spacing-sm); }
+        .listing-details { display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-sm); font-size: 0.9rem; color: var(--text-secondary); }
+        .listing-status { display: inline-block; padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; background: rgba(40, 167, 69, 0.2); color: var(--success); }
+        .loading-listings { text-align: center; padding: var(--spacing-xl); color: var(--text-muted); }
+        .error-message { background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); color: var(--danger); padding: var(--spacing-lg); border-radius: var(--radius-md); text-align: center; }
     </style>
 </head>
 <body class="dark-mode">
@@ -216,205 +63,81 @@
                 <div class="pipeline-value-label">Total Pipeline Value</div>
                 <div class="pipeline-value-number" id="pipelineValue">$--</div>
             </div>
-            <div class="pipeline-stats">
+            <div style="text-align: right;">
                 <div class="pipeline-stat" id="listingsCount">-- properties</div>
                 <div class="pipeline-stat" id="avgPrice">Avg: $--</div>
             </div>
         </div>
         
-        <!-- Listings Filter -->
-        <section class="filters-bar">
-            <div class="filter-group">
-                <label>Filter by:</label>
-                <select id="statusFilter" class="filter-select">
-                    <option value="all">All Status</option>
-                    <option value="Active">Active</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Sold">Sold</option>
-                </select>
-                <select id="countyFilter" class="filter-select">
-                    <option value="all">All Counties</option>
-                    <option value="Walton">Walton</option>
-                    <option value="Broward">Broward</option>
-                    <option value="Okaloosa">Okaloosa</option>
-                    <option value="Bay">Bay</option>
-                </select>
-            </div>
-        </section>
-        
         <!-- Listings Grid -->
         <div class="listings-grid" id="listingsGrid">
             <div class="loading-listings">
                 <div class="loading-spinner"></div>
-                <p>Loading listings from Google Sheets...</p>
+                <p>Loading listings...</p>
             </div>
         </div>
         
     </main>
     
     <script>
-        // Fetch and display listings (JSON first, Sheets as backup)
+        // Load from JSON file ONLY (no CORS issues)
         async function loadListings() {
             const grid = document.getElementById('listingsGrid');
             
             try {
-                let listings = null;
+                const response = await fetch('team-listings.json');
+                const data = await response.json();
+                const listings = data.listings || [];
                 
-                // Try JSON first (avoids CORS issues)
-                try {
-                    const response = await fetch('team-listings.json');
-                    const data = await response.json();
-                    listings = data.listings || [];
-                    console.log('Loaded from JSON:', listings.length, 'listings');
-                } catch (jsonError) {
-                    console.log('JSON load failed, trying Sheets:', jsonError);
-                    // Fallback to Google Sheets
-                    listings = await fetchSheetData('Listings');
-                }
+                // Active listings only
+                const activeListings = listings.filter(l => l.status === 'Active');
                 
-                if (!listings || listings.length === 0) {
-                    grid.innerHTML = '<div class="error-message">No listings found.</div>';
-                    return;
-                }
-                
-                // Handle both JSON format (status field) and Sheet format (Status field)
-                const normalizedListings = listings.map(l => ({
-                    ...l,
-                    Status: l.Status || l.status,
-                    Address: l.Address || l.address,
-                    'List Price': l['List Price'] || l.listPrice,
-                    County: l.County || l.county,
-                    City: l.City || l.city,
-                    Bedrooms: l.Bedrooms || l.bedrooms,
-                    'Total Baths': l['Total Baths'] || l.bathrooms,
-                    'Apx SqFt(Htd/Cooled)': l['Apx SqFt(Htd/Cooled)'] || l.sqft,
-                    'Year Built': l['Year Built'] || l.yearBuilt,
-                    'Days on Market': l['Days on Market'] || l.daysOnMarket,
-                    'Photo URL': l['Photo URL'] || l.photoUrl,
-                    'List Number': l['List Number'] || l.mlsNumber
-                }));
-                
-                // Filter to Active listings (Status = "A" or status = "Active")
-                const activeListings = normalizedListings.filter(listing => 
-                    listing.Status === 'A' || listing.Status === 'Active'
-                );
-                
-                // Calculate pipeline value for active listings only
-                const totalValue = activeListings.reduce((sum, listing) => {
-                    const price = parseFloat(listing['List Price'] || 0);
-                    return sum + (isNaN(price) ? 0 : price);
-                }, 0);
-                
-                const avgPrice = activeListings.length > 0 ? totalValue / activeListings.length : 0;
-                
-                // Calculate projected revenue for internal use (2.75% for active)
-                const projectedRevenue = totalValue * 0.0275;
-                console.log('Projected Revenue (Active):', projectedRevenue);
-                
-                // Also calculate for closed (Status = "C") at 2.5%
-                const closedListings = listings.filter(listing => listing.Status === 'C');
-                const closedRevenue = closedListings.reduce((sum, listing) => {
-                    const price = parseFloat(listing['Sold Price'] || listing['List Price'] || 0);
-                    return sum + (isNaN(price) ? 0 : price);
-                }, 0) * 0.025;
-                console.log('Closed Commission Revenue:', closedRevenue);
-                
-                // Update pipeline summary
-                document.getElementById('pipelineValue').textContent = formatCurrency(totalValue);
-                document.getElementById('listingsCount').textContent = `${activeListings.length} properties`;
-                document.getElementById('avgPrice').textContent = `Avg: ${formatCurrency(avgPrice)}`;
-                
-                // Render active listings only
                 if (activeListings.length === 0) {
-                    grid.innerHTML = '<div class="no-listings">No active listings found.</div>';
+                    grid.innerHTML = '<div class="error-message">No active listings found.</div>';
                     return;
                 }
                 
-                grid.innerHTML = activeListings.map(listing => {
-                    const address = listing.Address || 'No address';
-                    const price = parseFloat(listing['List Price'] || 0);
-                    const status = listing.Status === 'A' ? 'Active' : listing.Status;
-                    const county = listing.County || 'Unknown';
-                    const city = listing.City || '';
-                    const beds = listing.Bedrooms || '--';
-                    const baths = listing['Total Baths'] || (listing['Full Baths'] && listing['Half Baths'] ? 
-                        `${listing['Full Baths']}/${listing['Half Baths']}` : '--');
-                    const sqft = listing['Apx SqFt(Htd/Cooled)'] || listing['SqFt Source'] || '--';
-                    const yearBuilt = listing['Year Built'] || '';
-                    const dom = listing['Days on Market'] || '--';
-                    const photoUrl = listing['Photo URL'] || '';
-                    const mlsNumber = listing['List Number'] || '';
-                    
-                    return `
-                        <div class="listing-card" data-status="${status.toLowerCase()}" data-county="${county.toLowerCase()}">
-                            <div class="listing-image">
-                                ${photoUrl ? `<img src="${photoUrl}" alt="${address}" style="width:100%;height:100%;object-fit:cover;">` : '🏠'}
-                            </div>
-                            <div class="listing-content">
-                                <div class="listing-address">${address}</div>
-                                <div class="listing-location">${city}, ${county} County</div>
-                                <div class="listing-price">${formatCurrency(price)}</div>
-                                <div class="listing-details">
-                                    <span>${beds} beds</span>
-                                    <span>${baths} baths</span>
-                                    <span>${sqft} sqft</span>
-                                    ${yearBuilt ? `<span>Built ${yearBuilt}</span>` : ''}
-                                </div>
-                                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.5rem;">
-                                    <span class="listing-status status-active">${status}</span>
-                                    <span style="font-size:0.8rem;color:var(--text-muted);">${dom} DOM</span>
-                                </div>
-                                ${mlsNumber ? `<a href="https://search.my850.com/property/${mlsNumber}" target="_blank" style="display:block;margin-top:0.75rem;color:var(--accent-teal);font-size:0.85rem;">View on my850 →</a>` : ''}
-                            </div>
-                        </div>
-                    `;
-                }).join('');
+                // Calculate stats
+                const totalValue = activeListings.reduce((sum, l) => sum + (l.listPrice || 0), 0);
+                const avgPrice = totalValue / activeListings.length;
                 
-                // Setup filters
-                setupFilters();
+                // Update stats
+                document.getElementById('pipelineValue').textContent = formatCurrency(totalValue);
+                document.getElementById('listingsCount').textContent = activeListings.length + ' properties';
+                document.getElementById('avgPrice').textContent = 'Avg: ' + formatCurrency(avgPrice);
+                
+                // Render listings
+                grid.innerHTML = activeListings.map(l => `
+                    <div class="listing-card">
+                        <div class="listing-image">
+                            ${l.photosReady ? `<img src="${l.photosReady}" alt="${l.address}">` : '🏠'}
+                        </div>
+                        <div class="listing-content">
+                            <div class="listing-address">${l.address}</div>
+                            <div class="listing-location">${l.city}, ${l.state} ${l.zip}</div>
+                            <div class="listing-price">${formatCurrency(l.listPrice)}</div>
+                            <div class="listing-details">
+                                <span>${l.bedrooms} beds</span>
+                                <span>${l.bathrooms} baths</span>
+                                <span>${l.sqft} sqft</span>
+                            </div>
+                            <span class="listing-status">Active</span>
+                        </div>
+                    </div>
+                `).join('');
                 
             } catch (error) {
                 console.error('Error loading listings:', error);
-                grid.innerHTML = '<div class="error-message">Failed to load listings. Check console for details.</div>';
+                grid.innerHTML = '<div class="error-message">Failed to load listings. Check console.</div>';
             }
         }
         
-        // Format currency helper
         function formatCurrency(value) {
-            if (value >= 1000000) {
-                return '$' + (value / 1000000).toFixed(2) + 'M';
-            } else if (value >= 1000) {
-                return '$' + (value / 1000).toFixed(0) + 'K';
-            }
-            return '$' + value.toFixed(0);
+            if (value >= 1000000) return '$' + (value / 1000000).toFixed(2) + 'M';
+            if (value >= 1000) return '$' + (value / 1000).toFixed(0) + 'K';
+            return '$' + value;
         }
         
-        // Setup filters
-        function setupFilters() {
-            const statusFilter = document.getElementById('statusFilter');
-            const countyFilter = document.getElementById('countyFilter');
-            const cards = document.querySelectorAll('.listing-card');
-            
-            function applyFilters() {
-                const status = statusFilter.value;
-                const county = countyFilter.value;
-                
-                cards.forEach(card => {
-                    const cardStatus = card.getAttribute('data-status');
-                    const cardCounty = card.getAttribute('data-county');
-                    
-                    const statusMatch = status === 'all' || cardStatus === status.toLowerCase();
-                    const countyMatch = county === 'all' || cardCounty === county.toLowerCase();
-                    
-                    card.style.display = (statusMatch && countyMatch) ? 'block' : 'none';
-                });
-            }
-            
-            statusFilter.addEventListener('change', applyFilters);
-            countyFilter.addEventListener('change', applyFilters);
-        }
-        
-        // Load on page load
         document.addEventListener('DOMContentLoaded', loadListings);
     </script>
     
