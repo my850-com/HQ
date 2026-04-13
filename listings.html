@@ -80,25 +80,29 @@
     </main>
     
     <script>
-        // Load from JSON file ONLY (no CORS issues)
+        // Load from Google Sheets CSV (auto-updates when sheet changes)
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdI2q5qlHpihVdEm7ev8GHjCqWQQ7NTX0C2MnNRYWkd2eAweBjdPRA2zEG-4xq5dJ4FdvqhgOCkuXU/pub?gid=494197748&single=true&output=csv';
+        
         async function loadListings() {
             const grid = document.getElementById('listingsGrid');
             
             try {
-                const response = await fetch('team-listings.json');
-                const data = await response.json();
-                const listings = data.listings || [];
+                const response = await fetch(SHEET_CSV_URL);
+                const csv = await response.text();
+                const listings = parseCSV(csv);
                 
-                // Active listings only
-                const activeListings = listings.filter(l => l.status === 'Active');
+                // Filter Active listings (Status column = 'A')
+                const activeListings = listings.filter(l => l.Status === 'A');
                 
                 if (activeListings.length === 0) {
                     grid.innerHTML = '<div class="error-message">No active listings found.</div>';
                     return;
                 }
                 
-                // Calculate stats
-                const totalValue = activeListings.reduce((sum, l) => sum + (l.listPrice || 0), 0);
+                // Calculate pipeline value
+                const totalValue = activeListings.reduce((sum, l) => {
+                    return sum + (parseFloat(l['List Price']) || 0);
+                }, 0);
                 const avgPrice = totalValue / activeListings.length;
                 
                 // Update stats
@@ -107,35 +111,90 @@
                 document.getElementById('avgPrice').textContent = 'Avg: ' + formatCurrency(avgPrice);
                 
                 // Render listings
-                grid.innerHTML = activeListings.map(l => `
-                    <div class="listing-card">
-                        <div class="listing-image">
-                            ${l.photosReady ? `<img src="${l.photosReady}" alt="${l.address}">` : '🏠'}
-                        </div>
-                        <div class="listing-content">
-                            <div class="listing-address">${l.address}</div>
-                            <div class="listing-location">${l.city}, ${l.state} ${l.zip}</div>
-                            <div class="listing-price">${formatCurrency(l.listPrice)}</div>
-                            <div class="listing-details">
-                                <span>${l.bedrooms} beds</span>
-                                <span>${l.bathrooms} baths</span>
-                                <span>${l.sqft} sqft</span>
+                grid.innerHTML = activeListings.map(l => {
+                    const price = parseFloat(l['List Price']) || 0;
+                    const address = l.Address || 'No address';
+                    const city = l.City || '';
+                    const state = l.State || 'FL';
+                    const county = l.County || '';
+                    const beds = l.Bedrooms || '--';
+                    const baths = l['Total Baths'] || l['Full Baths'] || '--';
+                    const sqft = l['Apx SqFt(Htd/Cooled)'] || '--';
+                    const photoUrl = l['Photo URL'] || '';
+                    const mlsNumber = l['List Number'] || '';
+                    
+                    return `
+                        <div class="listing-card">
+                            <div class="listing-image">
+                                ${photoUrl ? `<img src="${photoUrl}" alt="${address}">` : '🏠'}
                             </div>
-                            <span class="listing-status">Active</span>
+                            <div class="listing-content">
+                                <div class="listing-address">${address}</div>
+                                <div class="listing-location">${city}, ${county} County</div>
+                                <div class="listing-price">${formatCurrency(price)}</div>
+                                <div class="listing-details">
+                                    <span>${beds} beds</span>
+                                    <span>${baths} baths</span>
+                                    <span>${sqft} sqft</span>
+                                </div>
+                                ${mlsNumber ? `<a href="https://search.my850.com/property/${mlsNumber}" target="_blank" style="color:var(--accent-teal);font-size:0.85rem;">View on my850 →</a>` : ''}
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
+                
+                console.log('Loaded', activeListings.length, 'active listings from Google Sheets');
                 
             } catch (error) {
                 console.error('Error loading listings:', error);
-                grid.innerHTML = '<div class="error-message">Failed to load listings. Check console.</div>';
+                grid.innerHTML = '<div class="error-message">Failed to load listings. Check console for details.</div>';
             }
+        }
+        
+        // Parse CSV to array of objects
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            if (lines.length < 2) return [];
+            
+            const headers = parseCSVLine(lines[0]);
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                const obj = {};
+                headers.forEach((header, index) => {
+                    obj[header] = values[index] || '';
+                });
+                data.push(obj);
+            }
+            
+            return data;
+        }
+        
+        // Parse a single CSV line (handles quotes)
+        function parseCSVLine(line) {
+            const values = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (const char of line) {
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    values.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            values.push(current.trim());
+            return values;
         }
         
         function formatCurrency(value) {
             if (value >= 1000000) return '$' + (value / 1000000).toFixed(2) + 'M';
             if (value >= 1000) return '$' + (value / 1000).toFixed(0) + 'K';
-            return '$' + value;
+            return '$' + value.toFixed(0);
         }
         
         document.addEventListener('DOMContentLoaded', loadListings);
