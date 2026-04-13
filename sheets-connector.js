@@ -106,7 +106,7 @@ function calculateProjectedRevenue(listings) {
     };
 }
 
-// Fetch all metrics from Google Sheets
+// Fetch all metrics from Google Sheets (with fallback to JSON)
 async function fetchAllMetrics() {
     const metrics = {
         activeListings: 0,
@@ -122,16 +122,35 @@ async function fetchAllMetrics() {
         topPriorityCount: 0
     };
     
-    // Fetch Listings
-    const listings = await fetchSheetData(SHEET_CONFIG.tabs.listings);
-    if (listings) {
+    let listings = null;
+    
+    // Try Google Sheets first
+    try {
+        listings = await fetchSheetData(SHEET_CONFIG.tabs.listings);
+    } catch (e) {
+        console.warn('Sheets fetch failed, trying JSON fallback:', e);
+    }
+    
+    // Fallback to JSON if Sheets fails
+    if (!listings) {
+        try {
+            const response = await fetch('team-listings.json');
+            const data = await response.json();
+            listings = data.listings || [];
+            console.log('Using JSON fallback data:', listings.length, 'listings');
+        } catch (e) {
+            console.error('Both Sheets and JSON failed:', e);
+        }
+    }
+    
+    if (listings && listings.length > 0) {
         // Count only Active listings (Status = 'A')
         const activeListings = listings.filter(row => row.Status === 'A');
         metrics.activeListings = activeListings.length;
         
         // Calculate pipeline value for active listings only
         metrics.pipelineValue = activeListings.reduce((sum, row) => {
-            const amount = parseFloat(row['List Price'] || 0);
+            const amount = parseFloat(row['List Price'] || row.listPrice || 0);
             return sum + (isNaN(amount) ? 0 : amount);
         }, 0);
         
