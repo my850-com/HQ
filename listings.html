@@ -8,7 +8,31 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- External CSS -->
     <link rel="stylesheet" href="styles.css">
+    <!-- Google Sheets Connector -->
+    <script src="sheets-connector.js"></script>
     <style>
+        .listings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+        
+        .listings-title h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .listings-title p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
         .back-link {
             color: var(--accent-teal);
             text-decoration: none;
@@ -23,44 +47,47 @@
             color: var(--text-primary);
         }
         
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: var(--spacing-lg);
-            margin-bottom: var(--spacing-xl);
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-            border: 1px solid var(--border-color);
+        .pipeline-summary {
+            background: linear-gradient(135deg, var(--success), #34ce57);
             border-radius: var(--radius-md);
             padding: var(--spacing-lg);
-            text-align: center;
+            margin-bottom: var(--spacing-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .stat-card.active {
-            border-color: var(--accent-teal);
+        .pipeline-summary.light-mode {
+            background: linear-gradient(135deg, #28a745, #34ce57);
         }
         
-        .stat-card.volume {
-            border-color: var(--success);
+        .pipeline-value-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
         }
         
-        .stat-card.revenue {
-            border-color: var(--warning);
-        }
-        
-        .stat-number {
+        .pipeline-value-number {
             font-size: 2.5rem;
             font-weight: 800;
-            color: var(--text-primary);
+            margin-top: var(--spacing-xs);
         }
         
-        .stat-label {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .pipeline-stats {
+            text-align: right;
+        }
+        
+        .pipeline-stat {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .listings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: var(--spacing-lg);
         }
         
         .listing-card {
@@ -69,149 +96,76 @@
             border-radius: var(--radius-md);
             overflow: hidden;
             transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-            cursor: pointer;
         }
         
         .listing-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-5px);
             box-shadow: var(--shadow-md);
-            border-color: var(--accent-teal);
         }
         
-        .listing-header {
-            display: grid;
-            grid-template-columns: 140px 1fr auto;
-            gap: var(--spacing-lg);
-            padding: var(--spacing-lg);
-            align-items: start;
-        }
-        
-        .listing-photo {
-            width: 140px;
-            height: 100px;
-            border-radius: var(--radius-sm);
-            object-fit: cover;
+        .listing-image {
+            height: 200px;
             background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
         }
         
-        .listing-main h3 {
+        .listing-content {
+            padding: var(--spacing-lg);
+        }
+        
+        .listing-address {
             font-size: 1.1rem;
+            font-weight: 600;
             margin-bottom: var(--spacing-xs);
-            color: var(--text-primary);
+            line-height: 1.4;
         }
         
         .listing-location {
-            font-size: 0.85rem;
             color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: var(--spacing-sm);
         }
         
-        .listing-tags {
+        .listing-price {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--success);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .listing-details {
             display: flex;
-            gap: var(--spacing-sm);
-            margin-top: var(--spacing-sm);
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
         }
         
-        .tag {
-            padding: 2px 8px;
+        .listing-status {
+            display: inline-block;
+            padding: var(--spacing-xs) var(--spacing-sm);
             border-radius: var(--radius-sm);
             font-size: 0.75rem;
-            font-weight: 500;
+            font-weight: 600;
+            text-transform: uppercase;
         }
         
-        .tag-type {
+        .status-active {
             background: rgba(40, 167, 69, 0.2);
             color: var(--success);
         }
         
-        .tag-dom {
-            background: rgba(100, 181, 246, 0.2);
-            color: var(--accent-teal);
-        }
-        
-        .listing-price {
-            text-align: right;
-        }
-        
-        .price-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--success);
-        }
-        
-        .revenue-value {
-            font-size: 0.9rem;
+        .status-pending {
+            background: rgba(255, 193, 7, 0.2);
             color: var(--warning);
-            margin-top: var(--spacing-xs);
         }
         
-        .listing-details {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s ease;
-            background: rgba(0, 0, 0, 0.2);
-        }
-        
-        .listing-details.expanded {
-            max-height: 600px;
-        }
-        
-        .details-content {
-            padding: var(--spacing-lg);
-            border-top: 1px solid var(--border-color);
-        }
-        
-        .details-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: var(--spacing-md);
-        }
-        
-        .detail-item {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .detail-label {
-            font-size: 0.75rem;
+        .status-sold {
+            background: rgba(108, 117, 125, 0.2);
             color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .detail-value {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-        
-        .details-actions {
-            display: flex;
-            gap: var(--spacing-sm);
-            margin-top: var(--spacing-lg);
-            padding-top: var(--spacing-lg);
-            border-top: 1px solid var(--border-color);
-        }
-        
-        .showing-notes {
-            background: rgba(64, 181, 246, 0.1);
-            border-left: 3px solid var(--accent-teal);
-            padding: var(--spacing-md);
-            margin-top: var(--spacing-md);
-            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-        }
-        
-        .showing-notes-label {
-            font-size: 0.75rem;
-            color: var(--accent-teal);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: var(--spacing-xs);
-        }
-        
-        .showing-notes-text {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            line-height: 1.5;
         }
         
         .loading-listings {
@@ -220,23 +174,13 @@
             color: var(--text-muted);
         }
         
-        .no-listings {
-            text-align: center;
-            padding: var(--spacing-xl);
-            color: var(--text-muted);
-            background: var(--bg-secondary);
+        .error-message {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: var(--danger);
+            padding: var(--spacing-lg);
             border-radius: var(--radius-md);
-            border: 1px solid var(--border-color);
-        }
-        
-        .expand-icon {
-            font-size: 1.25rem;
-            color: var(--accent-teal);
-            transition: transform 0.3s;
-        }
-        
-        .expand-icon.expanded {
-            transform: rotate(180deg);
+            text-align: center;
         }
     </style>
 </head>
@@ -247,7 +191,7 @@
             <div class="logo">
                 <span class="logo-icon">🏠</span>
                 <div class="logo-text">
-                    <h1>Active Listings</h1>
+                    <h1>My Listings</h1>
                     <span class="logo-tagline">Property Portfolio</span>
                 </div>
             </div>
@@ -259,196 +203,155 @@
     
     <main class="main-container">
         
-        <!-- Stats Row -->
-        <div class="stats-row">
-            <div class="stat-card active">
-                <div class="stat-number" id="activeCount">--</div>
-                <div class="stat-label">Active Listings</div>
-            </div>
-            <div class="stat-card volume">
-                <div class="stat-number" id="totalVolume">$--</div>
-                <div class="stat-label">Total Volume</div>
-            </div>
-            <div class="stat-card revenue">
-                <div class="stat-number" id="projectedRevenue">$--</div>
-                <div class="stat-label">Proj. Revenue (2.75%)</div>
+        <div class="listings-header">
+            <div class="listings-title">
+                <h1>Active Listings</h1>
+                <p>All properties currently on the market</p>
             </div>
         </div>
+        
+        <!-- Pipeline Value Summary -->
+        <div class="pipeline-summary" id="pipelineSummary">
+            <div>
+                <div class="pipeline-value-label">Total Pipeline Value</div>
+                <div class="pipeline-value-number" id="pipelineValue">$--</div>
+            </div>
+            <div class="pipeline-stats">
+                <div class="pipeline-stat" id="listingsCount">-- properties</div>
+                <div class="pipeline-stat" id="avgPrice">Avg: $--</div>
+            </div>
+        </div>
+        
+        <!-- Listings Filter -->
+        <section class="filters-bar">
+            <div class="filter-group">
+                <label>Filter by:</label>
+                <select id="statusFilter" class="filter-select">
+                    <option value="all">All Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Sold">Sold</option>
+                </select>
+                <select id="countyFilter" class="filter-select">
+                    <option value="all">All Counties</option>
+                    <option value="Walton">Walton</option>
+                    <option value="Broward">Broward</option>
+                    <option value="Okaloosa">Okaloosa</option>
+                    <option value="Bay">Bay</option>
+                </select>
+            </div>
+        </section>
         
         <!-- Listings Grid -->
         <div class="listings-grid" id="listingsGrid">
             <div class="loading-listings">
                 <div class="loading-spinner"></div>
-                <p>Loading listings...</p>
+                <p>Loading listings from Google Sheets...</p>
             </div>
         </div>
         
     </main>
     
     <script>
-        // Load listings from JSON
+        // Fetch and display listings
         async function loadListings() {
             const grid = document.getElementById('listingsGrid');
             
             try {
-                // Fetch from team-listings.json (in parent directory for GitHub Pages)
-                const response = await fetch('../team-listings.json');
-                const data = await response.json();
-                const listings = data.listings.filter(l => l.status === 'Active');
+                // Fetch from Google Sheets
+                const listings = await fetchSheetData('Listings');
                 
                 if (!listings || listings.length === 0) {
-                    grid.innerHTML = '<div class="no-listings">No active listings found.</div>';
+                    grid.innerHTML = '<div class="error-message">No listings found. Check Google Sheet connection.</div>';
                     return;
                 }
                 
-                // Calculate stats
-                const totalVolume = listings.reduce((sum, l) => sum + (l.listPrice || 0), 0);
-                const projectedRevenue = totalVolume * 0.0275;
+                // Calculate pipeline value
+                const totalValue = listings.reduce((sum, listing) => {
+                    const price = parseFloat(listing.Price || listing['Asking Price'] || listing.Amount || 0);
+                    return sum + (isNaN(price) ? 0 : price);
+                }, 0);
                 
-                // Update stats
-                document.getElementById('activeCount').textContent = listings.length;
-                document.getElementById('totalVolume').textContent = '$' + (totalVolume / 1000000).toFixed(2) + 'M';
-                document.getElementById('projectedRevenue').textContent = '$' + Math.round(projectedRevenue / 1000) + 'K';
+                const avgPrice = totalValue / listings.length;
+                
+                // Update pipeline summary
+                document.getElementById('pipelineValue').textContent = formatCurrency(totalValue);
+                document.getElementById('listingsCount').textContent = `${listings.length} properties`;
+                document.getElementById('avgPrice').textContent = `Avg: ${formatCurrency(avgPrice)}`;
                 
                 // Render listings
                 grid.innerHTML = listings.map(listing => {
-                    const projected = (listing.listPrice || 0) * 0.0275;
+                    const address = listing.Address || listing['Property Address'] || listing['Full Address'] || 'No address';
+                    const price = parseFloat(listing.Price || listing['Asking Price'] || listing.Amount || 0);
+                    const status = listing.Status || 'Active';
+                    const county = listing.County || 'Unknown';
+                    const beds = listing.Beds || listing.Bedrooms || '--';
+                    const baths = listing.Baths || listing.Bathrooms || '--';
+                    const sqft = listing.SqFt || listing['Square Feet'] || '--';
+                    
+                    const statusClass = status.toLowerCase() === 'active' ? 'status-active' :
+                                       status.toLowerCase() === 'pending' ? 'status-pending' : 'status-sold';
+                    
                     return `
-                        <div class="listing-card" onclick="toggleDetails('${listing.mlsNumber}')">
-                            <div class="listing-header">
-                                <img src="${listing.photoUrl || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 140 100%22><rect fill=%22%232a2a3a%22 width=%22140%22 height=%22100%22/><text fill=%22%23666%22 x=%2270%22 y=%2255%22 text-anchor=%22middle%22>No Photo</text></svg>'}" 
-                                     alt="${listing.address}" class="listing-photo">
-                                <div class="listing-main">
-                                    <h3>${listing.address}</h3>
-                                    <div class="listing-location">${listing.city}, ${listing.state} ${listing.zip}</div>
-                                    <div class="listing-tags">
-                                        <span class="tag tag-type">${listing.propertyType || 'Unknown'}</span>
-                                        <span class="tag tag-dom">${listing.daysOnMarket} DOM</span>
-                                    </div>
+                        <div class="listing-card" data-status="${status.toLowerCase()}" data-county="${county.toLowerCase()}">
+                            <div class="listing-image">🏠</div>
+                            <div class="listing-content">
+                                <div class="listing-address">${address}</div>
+                                <div class="listing-location">${county} County</div>
+                                <div class="listing-price">${formatCurrency(price)}</div>
+                                <div class="listing-details">
+                                    <span>${beds} beds</span>
+                                    <span>${baths} baths</span>
+                                    <span>${sqft} sqft</span>
                                 </div>
-                                <div class="listing-price">
-                                    <div class="price-value">$${(listing.listPrice || 0).toLocaleString()}</div>
-                                    <div class="revenue-value">Proj: $${Math.round(projected).toLocaleString()}</div>
-                                    <div class="expand-icon" id="icon-${listing.mlsNumber}">▼</div>
-                                </div>
-                            </div>
-                            <div class="listing-details" id="details-${listing.mlsNumber}">
-                                <div class="details-content">
-                                    <div class="details-grid">
-                                        <div class="detail-item">
-                                            <span class="detail-label">MLS Number</span>
-                                            <span class="detail-value">${listing.mlsNumber}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Seller</span>
-                                            <span class="detail-value">${listing.sellerName || 'N/A'}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">List Date</span>
-                                            <span class="detail-value">${listing.listingDate || 'N/A'}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Expires</span>
-                                            <span class="detail-value">${listing.expirationDate || 'N/A'}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Bed / Bath</span>
-                                            <span class="detail-value">${listing.bedrooms || 0} / ${listing.bathrooms || 'N/A'}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Square Feet</span>
-                                            <span class="detail-value">${(listing.sqft || 0).toLocaleString()}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Year Built</span>
-                                            <span class="detail-value">${listing.yearBuilt || 'N/A'}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Subdivision</span>
-                                            <span class="detail-value">${listing.subdivision || 'N/A'}</span>
-                                        </div>
-                                        ${listing.originalListPrice ? `
-                                        <div class="detail-item">
-                                            <span class="detail-label">Original Price</span>
-                                            <span class="detail-value">$${(listing.originalListPrice).toLocaleString()}</span>
-                                        </div>
-                                        ` : ''}
-                                        ${listing.acreage ? `
-                                        <div class="detail-item">
-                                            <span class="detail-label">Lot Size</span>
-                                            <span class="detail-value">${listing.acreage} acres</span>
-                                        </div>
-                                        ` : ''}
-                                        ${listing.hoa ? `
-                                        <div class="detail-item">
-                                            <span class="detail-label">HOA</span>
-                                            <span class="detail-value">${listing.hoa}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">HOA Fee</span>
-                                            <span class="detail-value">$${(listing.hoaFee || 0).toLocaleString()}/year</span>
-                                        </div>
-                                        ` : ''}
-                                        ${listing.taxes ? `
-                                        <div class="detail-item">
-                                            <span class="detail-label">Taxes</span>
-                                            <span class="detail-value">$${(listing.taxes).toLocaleString()}/year</span>
-                                        </div>
-                                        ` : ''}
-                                    </div>
-                                    ${listing.showingNotes ? `
-                                    <div class="showing-notes">
-                                        <div class="showing-notes-label">Showing Notes</div>
-                                        <div class="showing-notes-text">${listing.showingNotes}</div>
-                                    </div>
-                                    ` : ''}
-                                    <div class="details-actions">
-                                        <a href="https://search.my850.com/property/${listing.mlsNumber}" target="_blank" class="btn btn-primary btn-sm" onclick="event.stopPropagation()">
-                                            🔗 View on my850
-                                        </a>
-                                        <button class="btn btn-outline btn-sm" onclick="copyInfo(this, '${listing.mlsNumber}')">
-                                            📋 Copy Info
-                                        </button>
-                                    </div>
-                                </div>
+                                <span class="listing-status ${statusClass}">${status}</span>
                             </div>
                         </div>
                     `;
                 }).join('');
                 
+                // Setup filters
+                setupFilters();
+                
             } catch (error) {
                 console.error('Error loading listings:', error);
-                grid.innerHTML = '<div class="no-listings">Failed to load listings. Check console for details.</div>';
+                grid.innerHTML = '<div class="error-message">Failed to load listings. Check console for details.</div>';
             }
         }
         
-        // Toggle listing details
-        function toggleDetails(mlsNumber) {
-            const details = document.getElementById(`details-${mlsNumber}`);
-            const icon = document.getElementById(`icon-${mlsNumber}`);
-            
-            details.classList.toggle('expanded');
-            icon.classList.toggle('expanded');
+        // Format currency helper
+        function formatCurrency(value) {
+            if (value >= 1000000) {
+                return '$' + (value / 1000000).toFixed(2) + 'M';
+            } else if (value >= 1000) {
+                return '$' + (value / 1000).toFixed(0) + 'K';
+            }
+            return '$' + value.toFixed(0);
         }
         
-        // Copy listing info
-        function copyInfo(button, mlsNumber) {
-            event.stopPropagation();
+        // Setup filters
+        function setupFilters() {
+            const statusFilter = document.getElementById('statusFilter');
+            const countyFilter = document.getElementById('countyFilter');
+            const cards = document.querySelectorAll('.listing-card');
             
-            // Find the listing data from the DOM
-            const card = button.closest('.listing-card');
-            const address = card.querySelector('h3').textContent;
-            const price = card.querySelector('.price-value').textContent;
+            function applyFilters() {
+                const status = statusFilter.value;
+                const county = countyFilter.value;
+                
+                cards.forEach(card => {
+                    const cardStatus = card.getAttribute('data-status');
+                    const cardCounty = card.getAttribute('data-county');
+                    
+                    const statusMatch = status === 'all' || cardStatus === status.toLowerCase();
+                    const countyMatch = county === 'all' || cardCounty === county.toLowerCase();
+                    
+                    card.style.display = (statusMatch && countyMatch) ? 'block' : 'none';
+                });
+            }
             
-            const text = `MLS #${mlsNumber} - ${address} - ${price}`;
-            
-            navigator.clipboard.writeText(text).then(() => {
-                const originalText = button.textContent;
-                button.textContent = '✓ Copied!';
-                setTimeout(() => {
-                    button.textContent = originalText;
-                }, 2000);
-            });
+            statusFilter.addEventListener('change', applyFilters);
+            countyFilter.addEventListener('change', applyFilters);
         }
         
         // Load on page load
