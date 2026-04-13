@@ -55,10 +55,11 @@
                 <a href="#analytics" class="nav-link">Analytics</a>
                 <a href="office.html" class="nav-link office-link">🤖 Office</a>
             </nav>
-                <a href="#team" class="nav-link">Team</a>
-                <a href="#tasks" class="nav-link">Tasks</a>
-                <a href="#analytics" class="nav-link">Analytics</a>
-            </nav>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
         <div class="header-right">
             <div class="live-clock" id="liveClock">
@@ -347,6 +348,21 @@
     <div id="toastContainer" class="toast-container"></div>
 
     <!-- External JavaScript -->
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobileMenuToggle')?.addEventListener('click', function() {
+            this.classList.toggle('active');
+            document.querySelector('.header-nav').classList.toggle('active');
+        });
+        
+        // Close menu when clicking a link
+        document.querySelectorAll('.header-nav a').forEach(link => {
+            link.addEventListener('click', function() {
+                document.getElementById('mobileMenuToggle').classList.remove('active');
+                document.querySelector('.header-nav').classList.remove('active');
+            });
+        });
+    </script>
     <script src="app.js"></script>
 </body>
 </html>
