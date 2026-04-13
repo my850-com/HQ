@@ -253,21 +253,51 @@
     </main>
     
     <script>
-        // Fetch and display listings
+        // Fetch and display listings (JSON first, Sheets as backup)
         async function loadListings() {
             const grid = document.getElementById('listingsGrid');
             
             try {
-                // Fetch from Google Sheets
-                const listings = await fetchSheetData('Listings');
+                let listings = null;
+                
+                // Try JSON first (avoids CORS issues)
+                try {
+                    const response = await fetch('team-listings.json');
+                    const data = await response.json();
+                    listings = data.listings || [];
+                    console.log('Loaded from JSON:', listings.length, 'listings');
+                } catch (jsonError) {
+                    console.log('JSON load failed, trying Sheets:', jsonError);
+                    // Fallback to Google Sheets
+                    listings = await fetchSheetData('Listings');
+                }
                 
                 if (!listings || listings.length === 0) {
-                    grid.innerHTML = '<div class="error-message">No listings found. Check Google Sheet connection.</div>';
+                    grid.innerHTML = '<div class="error-message">No listings found.</div>';
                     return;
                 }
                 
-                // Filter to Active listings (Status = "A")
-                const activeListings = listings.filter(listing => listing.Status === 'A');
+                // Handle both JSON format (status field) and Sheet format (Status field)
+                const normalizedListings = listings.map(l => ({
+                    ...l,
+                    Status: l.Status || l.status,
+                    Address: l.Address || l.address,
+                    'List Price': l['List Price'] || l.listPrice,
+                    County: l.County || l.county,
+                    City: l.City || l.city,
+                    Bedrooms: l.Bedrooms || l.bedrooms,
+                    'Total Baths': l['Total Baths'] || l.bathrooms,
+                    'Apx SqFt(Htd/Cooled)': l['Apx SqFt(Htd/Cooled)'] || l.sqft,
+                    'Year Built': l['Year Built'] || l.yearBuilt,
+                    'Days on Market': l['Days on Market'] || l.daysOnMarket,
+                    'Photo URL': l['Photo URL'] || l.photoUrl,
+                    'List Number': l['List Number'] || l.mlsNumber
+                }));
+                
+                // Filter to Active listings (Status = "A" or status = "Active")
+                const activeListings = normalizedListings.filter(listing => 
+                    listing.Status === 'A' || listing.Status === 'Active'
+                );
                 
                 // Calculate pipeline value for active listings only
                 const totalValue = activeListings.reduce((sum, listing) => {
