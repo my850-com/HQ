@@ -87,13 +87,13 @@
             </div>
             <div class="section-content" id="metricsContent">
                 <div class="metrics-grid">
-                    <!-- Active Listings - Clickable -->
+                    <!-- Active Listings - Clickable (Dynamic) -->
                     <a href="listings.html" class="metric-card primary clickable" data-metric="listings">
                         <div class="metric-icon">🏠</div>
                         <div class="metric-info">
                             <div class="metric-label">Active Listings</div>
                             <div class="metric-value" id="activeListings">--</div>
-                            <div class="metric-trend up">+3 this week</div>
+                            <div class="metric-trend up" id="listingsTrend">Loading...</div>
                         </div>
                     </a>
                     
@@ -364,5 +364,46 @@
         });
     </script>
     <script src="app.js"></script>
+    <!-- Load Active Listings Count from Google Sheets -->
+    <script>
+        const LISTINGS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdI2q5qlHpihVdEm7ev8GHjCqWQQ7NTX0C2MnNRYWkd2eAweBjdPRA2zEG-4xq5dJ4FdvqhgOCkuXU/pub?gid=494197748&single=true&output=csv';
+        
+        async function loadActiveListingsCount() {
+            try {
+                const response = await fetch(LISTINGS_CSV_URL, {
+                    headers: { 'Accept': 'text/csv,text/plain,*/*' }
+                });
+                if (!response.ok) throw new Error('CSV fetch failed');
+                
+                const csv = await response.text();
+                const listings = parseCSV(csv);
+                const activeCount = listings.filter(l => l.Status === 'A').length;
+                
+                document.getElementById('activeListings').textContent = activeCount;
+                document.getElementById('listingsTrend').textContent = 'View All →';
+            } catch (e) {
+                console.error('Active listings load failed:', e);
+                document.getElementById('activeListings').textContent = '11'; // fallback
+                document.getElementById('listingsTrend').textContent = 'View All →';
+            }
+        }
+        
+        // Simple CSV parser
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            if (lines.length < 2) return [];
+            const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+            const data = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',');
+                const row = {};
+                headers.forEach((h, idx) => { row[h] = values[idx]?.replace(/"/g, '').trim() || ''; });
+                data.push(row);
+            }
+            return data;
+        }
+        
+        document.addEventListener('DOMContentLoaded', loadActiveListingsCount);
+    </script>
 </body>
 </html>
