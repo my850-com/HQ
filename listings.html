@@ -87,8 +87,24 @@
             const grid = document.getElementById('listingsGrid');
             
             try {
-                const response = await fetch(SHEET_CSV_URL);
+                // Fetch with explicit headers
+                const response = await fetch(SHEET_CSV_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/csv,text/plain,*/*'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+                }
+                
                 const csv = await response.text();
+                
+                if (!csv || csv.trim().length === 0) {
+                    throw new Error('Empty CSV response');
+                }
+                
                 const listings = parseCSV(csv);
                 
                 // Filter Active listings (Status column = 'A')
