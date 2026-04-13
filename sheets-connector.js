@@ -82,11 +82,36 @@ function parseCSVLine(line) {
     return values;
 }
 
+// Calculate projected revenue by status
+// Active listings (Status = 'A'): 2.75% of List Price
+// Closed listings (Status = 'C'): 2.5% of Sold Price (for internal calculations)
+function calculateProjectedRevenue(listings) {
+    const activeListings = listings.filter(row => row.Status === 'A');
+    const closedListings = listings.filter(row => row.Status === 'C');
+    
+    const activeRevenue = activeListings.reduce((sum, row) => {
+        const price = parseFloat(row['List Price'] || row['Original List Price'] || 0);
+        return sum + (isNaN(price) ? 0 : price * 0.0275);
+    }, 0);
+    
+    const closedRevenue = closedListings.reduce((sum, row) => {
+        const price = parseFloat(row['Sold Price'] || row['List Price'] || 0);
+        return sum + (isNaN(price) ? 0 : price * 0.025);
+    }, 0);
+    
+    return {
+        activeRevenue,
+        closedRevenue,
+        totalRevenue: activeRevenue + closedRevenue
+    };
+}
+
 // Fetch all metrics from Google Sheets
 async function fetchAllMetrics() {
     const metrics = {
         activeListings: 0,
         pipelineValue: 0,
+        projectedRevenue: 0, // 2.75% for active, 2.5% for closed (internal)
         hotLeads: 0,
         lisPendens: 0,
         teamTasks: 0,
@@ -100,12 +125,25 @@ async function fetchAllMetrics() {
     // Fetch Listings
     const listings = await fetchSheetData(SHEET_CONFIG.tabs.listings);
     if (listings) {
-        metrics.activeListings = listings.length;
-        // Calculate pipeline value if Amount column exists
-        metrics.pipelineValue = listings.reduce((sum, row) => {
-            const amount = parseFloat(row.Amount || row['Asking Price'] || 0);
+        // Count only Active listings (Status = 'A')
+        const activeListings = listings.filter(row => row.Status === 'A');
+        metrics.activeListings = activeListings.length;
+        
+        // Calculate pipeline value for active listings only
+        metrics.pipelineValue = activeListings.reduce((sum, row) => {
+            const amount = parseFloat(row['List Price'] || 0);
             return sum + (isNaN(amount) ? 0 : amount);
         }, 0);
+        
+        // Calculate projected revenue (for internal reference)
+        const revenue = calculateProjectedRevenue(listings);
+        metrics.projectedRevenue = revenue.activeRevenue;
+        
+        // Log for dashboard debugging
+        console.log('Active Listings:', activeListings.length);
+        console.log('Pipeline Value:', metrics.pipelineValue);
+        console.log('Projected Revenue (2.75% active):', revenue.activeRevenue);
+        console.log('Closed Revenue (2.5%):', revenue.closedRevenue);
     }
     
     // Fetch Buyer + Seller leads

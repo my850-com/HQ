@@ -266,45 +266,75 @@
                     return;
                 }
                 
-                // Calculate pipeline value
-                const totalValue = listings.reduce((sum, listing) => {
-                    const price = parseFloat(listing.Price || listing['Asking Price'] || listing.Amount || 0);
+                // Filter to Active listings (Status = "A")
+                const activeListings = listings.filter(listing => listing.Status === 'A');
+                
+                // Calculate pipeline value for active listings only
+                const totalValue = activeListings.reduce((sum, listing) => {
+                    const price = parseFloat(listing['List Price'] || 0);
                     return sum + (isNaN(price) ? 0 : price);
                 }, 0);
                 
-                const avgPrice = totalValue / listings.length;
+                const avgPrice = activeListings.length > 0 ? totalValue / activeListings.length : 0;
+                
+                // Calculate projected revenue for internal use (2.75% for active)
+                const projectedRevenue = totalValue * 0.0275;
+                console.log('Projected Revenue (Active):', projectedRevenue);
+                
+                // Also calculate for closed (Status = "C") at 2.5%
+                const closedListings = listings.filter(listing => listing.Status === 'C');
+                const closedRevenue = closedListings.reduce((sum, listing) => {
+                    const price = parseFloat(listing['Sold Price'] || listing['List Price'] || 0);
+                    return sum + (isNaN(price) ? 0 : price);
+                }, 0) * 0.025;
+                console.log('Closed Commission Revenue:', closedRevenue);
                 
                 // Update pipeline summary
                 document.getElementById('pipelineValue').textContent = formatCurrency(totalValue);
-                document.getElementById('listingsCount').textContent = `${listings.length} properties`;
+                document.getElementById('listingsCount').textContent = `${activeListings.length} properties`;
                 document.getElementById('avgPrice').textContent = `Avg: ${formatCurrency(avgPrice)}`;
                 
-                // Render listings
-                grid.innerHTML = listings.map(listing => {
-                    const address = listing.Address || listing['Property Address'] || listing['Full Address'] || 'No address';
-                    const price = parseFloat(listing.Price || listing['Asking Price'] || listing.Amount || 0);
-                    const status = listing.Status || 'Active';
+                // Render active listings only
+                if (activeListings.length === 0) {
+                    grid.innerHTML = '<div class="no-listings">No active listings found.</div>';
+                    return;
+                }
+                
+                grid.innerHTML = activeListings.map(listing => {
+                    const address = listing.Address || 'No address';
+                    const price = parseFloat(listing['List Price'] || 0);
+                    const status = listing.Status === 'A' ? 'Active' : listing.Status;
                     const county = listing.County || 'Unknown';
-                    const beds = listing.Beds || listing.Bedrooms || '--';
-                    const baths = listing.Baths || listing.Bathrooms || '--';
-                    const sqft = listing.SqFt || listing['Square Feet'] || '--';
-                    
-                    const statusClass = status.toLowerCase() === 'active' ? 'status-active' :
-                                       status.toLowerCase() === 'pending' ? 'status-pending' : 'status-sold';
+                    const city = listing.City || '';
+                    const beds = listing.Bedrooms || '--';
+                    const baths = listing['Total Baths'] || (listing['Full Baths'] && listing['Half Baths'] ? 
+                        `${listing['Full Baths']}/${listing['Half Baths']}` : '--');
+                    const sqft = listing['Apx SqFt(Htd/Cooled)'] || listing['SqFt Source'] || '--';
+                    const yearBuilt = listing['Year Built'] || '';
+                    const dom = listing['Days on Market'] || '--';
+                    const photoUrl = listing['Photo URL'] || '';
+                    const mlsNumber = listing['List Number'] || '';
                     
                     return `
                         <div class="listing-card" data-status="${status.toLowerCase()}" data-county="${county.toLowerCase()}">
-                            <div class="listing-image">🏠</div>
+                            <div class="listing-image">
+                                ${photoUrl ? `<img src="${photoUrl}" alt="${address}" style="width:100%;height:100%;object-fit:cover;">` : '🏠'}
+                            </div>
                             <div class="listing-content">
                                 <div class="listing-address">${address}</div>
-                                <div class="listing-location">${county} County</div>
+                                <div class="listing-location">${city}, ${county} County</div>
                                 <div class="listing-price">${formatCurrency(price)}</div>
                                 <div class="listing-details">
                                     <span>${beds} beds</span>
                                     <span>${baths} baths</span>
                                     <span>${sqft} sqft</span>
+                                    ${yearBuilt ? `<span>Built ${yearBuilt}</span>` : ''}
                                 </div>
-                                <span class="listing-status ${statusClass}">${status}</span>
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.5rem;">
+                                    <span class="listing-status status-active">${status}</span>
+                                    <span style="font-size:0.8rem;color:var(--text-muted);">${dom} DOM</span>
+                                </div>
+                                ${mlsNumber ? `<a href="https://search.my850.com/property/${mlsNumber}" target="_blank" style="display:block;margin-top:0.75rem;color:var(--accent-teal);font-size:0.85rem;">View on my850 →</a>` : ''}
                             </div>
                         </div>
                     `;
