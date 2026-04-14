@@ -560,12 +560,15 @@ function getCurrentGridColor() {
 }
 
 // ================= DATA INITIALIZATION =================
-function initData() {
+async function initData() {
     // Load initial data
     AppState.allLeads = [...SAMPLE_DATA.leads];
     AppState.filteredLeads = [...SAMPLE_DATA.leads];
     AppState.teamMembers = [...SAMPLE_DATA.team];
     AppState.tasks = [...SAMPLE_DATA.tasks];
+    
+    // Fetch real active listings count from Google Sheets
+    await fetchActiveListingsCount();
     
     // Render all components
     renderMetrics();
@@ -573,6 +576,71 @@ function initData() {
     renderTeam();
     renderTasks();
     updateTaskStats();
+}
+
+// ================= ACTIVE LISTINGS COUNT =================
+async function fetchActiveListingsCount() {
+    try {
+        // Same CSV URL used by listings.html
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdI2q5qlHpihVdEm7ev8GHjCqWQQ7NTX0C2MnNRYWkd2eAweBjdPRA2zEG-4xq5dJ4FdvqhgOCkuXU/pub?gid=494197748&single=true&output=csv';
+        
+        const response = await fetch(SHEET_CSV_URL, {
+            headers: { 'Accept': 'text/csv' }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load');
+        
+        const csv = await response.text();
+        const listings = parseCSVToListings(csv);
+        const activeCount = listings.filter(l => l.Status === 'A').length;
+        
+        // Update the metrics
+        SAMPLE_DATA.metrics.activeListings = activeCount;
+        
+    } catch (error) {
+        console.error('Error fetching listings count:', error);
+        // Keep default value if fetch fails
+    }
+}
+
+// Parse CSV to array of objects (simplified for dashboard)
+function parseCSVToListings(csvText) {
+    const lines = csvText.trim().split('\n');
+    if (lines.length < 2) return [];
+    
+    const headers = parseCSVLine(lines[0]);
+    const data = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+        const values = parseCSVLine(lines[i]);
+        const obj = {};
+        headers.forEach((header, index) => {
+            obj[header] = values[index] || '';
+        });
+        data.push(obj);
+    }
+    
+    return data;
+}
+
+// Parse a single CSV line (handles quotes)
+function parseCSVLine(line) {
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (const char of line) {
+        if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            values.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    values.push(current.trim());
+    return values;
 }
 
 function renderMetrics() {

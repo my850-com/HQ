@@ -391,32 +391,38 @@
             }).join('');
         }
         
-        // Generate update text
+        // Generate update text with merge fields preserved for external processing
         function generateUpdateText(listing, sellerName, address, price, dom) {
-            const zillowViews = listing['Zillow Views'] || '0';
-            const zillowSaves = listing['Zillow Saves'] || '0';
-            const showings = listing['Showings Since Last'] || '0';
-            const inquiries = listing['Total Inquiries'] || '0';
-            const feedback = listing['Resent Agent Feedback'] || '';
+            const sellerFirstName = sellerName ? sellerName.split(' ')[0] : 'there';
+            const priceK = (price / 1000).toFixed(0) + 'K';
             
-            return `Hi ${sellerName},
-
-Update for your listing at ${address}:
+            return `Hi ${sellerFirstName}, Here is a quick update you.
+${address}
 
 THE NUMBERS
-• Price: ${formatPrice(price)}
-• Days on Market: ${dom}
+• Price: $${priceK}
+• Days on Market: ${dom || 0}
 
 ONLINE ACTIVITY
-• Zillow: ${zillowViews} views, ${zillowSaves} saves
-• Showings: ${showings}
-• Inquiries: ${inquiries}
+ZILLOW:
+• 316 views, 6 saves, |Zillow Total Saves| total saves, |Save Ratio| save ratio, |Last Save Ratio| last save ratio
+
+HOMES:
+• |Homes Views Current| views since last update for a change of |Homes Change| which is |Which Is|
+
+BUYER INTEREST:
+• Showings: 3 since last update, |Total Showings| total showings
+• Inquiries: 38 Total
 
 FEEDBACK:
-${feedback ? feedback.trim() : 'No recent agent feedback.'}
+|Additional Info|
 
-— Lars
-Sherlock HQ`;
+Neighborhood Summary:
+Listings available: *|Number of Listings in Area|*
+Change from last update:*|Listing Count Change|*
+Listings under contract: *|# of Pending Units|*
+Price reductions: *|# of Price Reductions|*
+Property link: [*|Current Listing in Area|*]`;
         }
         
         // Toggle property expansion
