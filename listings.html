@@ -127,7 +127,7 @@
                 document.getElementById('avgPrice').textContent = 'Avg: ' + formatCurrency(avgPrice);
                 
                 // Render listings
-                grid.innerHTML = activeListings.map(l => {
+                grid.innerHTML = activeListings.map((l, index) => {
                     const price = parseFloat(l['List Price']) || 0;
                     const address = l.Address || 'No address';
                     const city = l.City || '';
@@ -157,7 +157,7 @@
                     }
                     
                     return `
-                        <div class="listing-card" data-mls="${mlsNumber || i}">
+                        <div class="listing-card" data-mls="${mlsNumber || index}">
                             <div class="listing-image">
                                 ${photoUrl ? `<img src="${photoUrl}" alt="${address}">` : '🏠'}
                             </div>
