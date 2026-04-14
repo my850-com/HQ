@@ -180,24 +180,10 @@
                                 <!-- Property Link -->
                                 ${propertyLink ? `<a href="${propertyLink}" target="_blank" style="display:block;color:var(--accent-teal);font-size:0.85rem;margin-bottom:0.5rem;">${linkText}</a>` : ''}
                                 
-                                <!-- Actions Dropdown -->
-                                <div class="listing-actions" style="margin-top:10px;position:relative;">
-                                    <button class="actions-toggle" onclick="toggleActions(${index}, event)" style="background:#2E5090;color:white;border:none;padding:8px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;">
-                                        <span>⚡ Actions</span>
-                                        <span id="arrow-${index}">▼</span>
-                                    </button>
-                                    <div class="actions-menu" id="actions-${index}" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1a2d4a;border:2px solid #4a90d9;border-radius:6px;z-index:9999;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,0.8);">
-                                        <a href="#" onclick="generateSellerUpdateByIndex(event, ${index}); return false;" style="display:block;padding:12px 16px;color:#e0e6f0;text-decoration:none;font-size:0.9rem;border-bottom:1px solid #2a3f5f;transition:all 0.2s;" onmouseover="this.style.background='#2E5090';this.style.color='white'" onmouseout="this.style.background='';this.style.color='#e0e6f0'">
-                                            📱 Seller Update
-                                        </a>
-                                        <a href="#" onclick="copyToClipboard(event, '${escapeHtml(address)}'); return false;" style="display:block;padding:12px 16px;color:#e0e6f0;text-decoration:none;font-size:0.9rem;border-bottom:1px solid #2a3f5f;transition:all 0.2s;" onmouseover="this.style.background='#2E5090';this.style.color='white'" onmouseout="this.style.background='';this.style.color='#e0e6f0'">
-                                            📋 Copy Address
-                                        </a>
-                                        <a href="https://maps.google.com/?q=${encodeURIComponent(address)}" target="_blank" style="display:block;padding:12px 16px;color:#e0e6f0;text-decoration:none;font-size:0.9rem;transition:all 0.2s;" onmouseover="this.style.background='#2E5090';this.style.color='white'" onmouseout="this.style.background='';this.style.color='#e0e6f0'">
-                                            🗺️ View on Map
-                                        </a>
-                                    </div>
-                                </div>
+                                <!-- Information Button -->
+                                <button onclick="showPropertyInfo(${index})" style="margin-top:10px;width:100%;background:linear-gradient(135deg,#2E5090,#20C997);color:white;border:none;padding:10px;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;">
+                                    ℹ️ Information
+                                </button>
                             </div>
                         </div>
                     `;
@@ -257,6 +243,63 @@
             return '$' + value.toFixed(0);
         }
         
+        // Show Property Info Popup
+        function showPropertyInfo(index) {
+            const l = currentListings[index];
+            if (!l) {
+                alert('Error: Listing data not found');
+                return;
+            }
+            
+            const address = l['Address'] || 'Property';
+            const price = parseFloat(l['List Price']) || 0;
+            const dom = l['Days on Market'] || '--';
+            const sellerName = l['Sellers Name'] || 'Seller';
+            const zillowViews = l['Zillow Views'] || '0';
+            const zillowSaves = l['Zillow Saves'] || '0';
+            
+            const popup = prompt(
+                `📋 ${address}\n\n` +
+                `💰 Price: ${formatCurrency(price)}\n` +
+                `📅 DOM: ${dom}\n` +
+                `👤 Seller: ${sellerName}\n\n` +
+                `What would you like to do?\n` +
+                `1. Type "seller" for Seller Update\n` +
+                `2. Type "copy" to copy address\n` +
+                `3. Type "map" to view on map\n\n` +
+                `Or Cancel to close.`,
+                ''
+            );
+            
+            if (popup === null) return; // Cancelled
+            
+            const choice = popup.toLowerCase().trim();
+            
+            if (choice === 'seller' || choice.includes('seller') || choice.includes('update')) {
+                // Generate seller update
+                const message = `Hi ${sellerName},\n\nUpdate for ${address}:\n\n📊 Numbers:\n• Price: ${formatCurrency(price)}\n• Days on Market: ${dom}\n\n🏠 Online Activity:\n• Zillow: ${zillowViews} views, ${zillowSaves} saves\n\n— Lars, Sherlock HQ`;
+                
+                navigator.clipboard.writeText(message).then(() => {
+                    alert('✅ COPIED!\n\n' + message + '\n\nPaste into text message to send to seller.');
+                }).catch(() => {
+                    alert(message + '\n\n(Copy this text)');
+                });
+                
+            } else if (choice === 'copy' || choice.includes('copy') || choice.includes('address')) {
+                navigator.clipboard.writeText(address).then(() => {
+                    alert('✅ Address copied: ' + address);
+                }).catch(() => {
+                    alert(address + '\n\n(Copy this address)');
+                });
+                
+            } else if (choice === 'map' || choice.includes('map')) {
+                window.open(`https://maps.google.com/?q=${encodeURIComponent(address)}`, '_blank');
+                
+            } else {
+                alert('Type "seller", "copy", or "map" next time!');
+            }
+        }
+        
         // Generate Seller Update by Index (looks up from stored data)
         function generateSellerUpdateByIndex(event, index) {
             event.stopPropagation();
@@ -278,26 +321,8 @@
             const inquiries = listingData['Total Inquiries'] || '0';
             const feedback = listingData['Resent Agent Feedback'] || '';
             
-            // Format the message
-            const message = `Hi ${sellerName},
-
-Update for ${address}:
-
-📊 THE NUMBERS
-• Price: ${formatCurrency(price)}
-• Days on Market: ${dom}
-
-🏠 ONLINE ACTIVITY  
-• Zillow: ${zillowViews} views, ${zillowSaves} saves
-• Showings: ${showings}
-• Inquiries: ${inquiries}
-
-💬 AGENT FEEDBACK:
-${feedback ? feedback.trim() : 'No recent feedback.'}
-
-— Lars, Sherlock HQ`;
+            const message = `Hi ${sellerName},\n\nUpdate for ${address}:\n\n📊 THE NUMBERS\n• Price: ${formatCurrency(price)}\n• Days on Market: ${dom}\n\n🏠 ONLINE ACTIVITY  \n• Zillow: ${zillowViews} views, ${zillowSaves} saves\n• Showings: ${showings}\n• Inquiries: ${inquiries}\n\n💬 AGENT FEEDBACK:\n${feedback ? feedback.trim() : 'No recent feedback.'}\n\n— Lars, Sherlock HQ`;
             
-            // Copy to clipboard
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(message).then(() => {
                     alert('✅ Copied!\n\n' + message + '\n\nPaste into your text message.');
