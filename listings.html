@@ -83,6 +83,9 @@
         // Load from Google Sheets CSV (auto-updates when sheet changes)
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdI2q5qlHpihVdEm7ev8GHjCqWQQ7NTX0C2MnNRYWkd2eAweBjdPRA2zEG-4xq5dJ4FdvqhgOCkuXU/pub?gid=494197748&single=true&output=csv';
         
+        // Global storage for listings data
+        let currentListings = [];
+        
         async function loadListings() {
             const grid = document.getElementById('listingsGrid');
             
@@ -125,6 +128,9 @@
                 document.getElementById('pipelineValue').textContent = formatCurrency(totalValue);
                 document.getElementById('listingsCount').textContent = activeListings.length + ' properties';
                 document.getElementById('avgPrice').textContent = 'Avg: ' + formatCurrency(avgPrice);
+                
+                // Store listings globally for lookup
+                currentListings = activeListings;
                 
                 // Render listings
                 grid.innerHTML = activeListings.map((l, index) => {
@@ -175,21 +181,21 @@
                                 ${propertyLink ? `<a href="${propertyLink}" target="_blank" style="display:block;color:var(--accent-teal);font-size:0.85rem;margin-bottom:0.5rem;">${linkText}</a>` : ''}
                                 
                                 <!-- Actions Dropdown -->
-                                <div class="listing-actions">
-                                    <button class="actions-toggle" onclick="toggleActions(${index}, event)">
-                                        ⚡ Actions ⏷
+                                <div class="listing-actions" style="margin-top:10px;position:relative;">
+                                    <button class="actions-toggle" onclick="toggleActions(${index}, event)" style="background:#2E5090;color:white;border:none;padding:8px 12px;border-radius:6px;font-size:0.85rem;cursor:pointer;width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center;">
+                                        <span>⚡ Actions</span>
+                                        <span id="arrow-${index}">▼</span>
                                     </button>
-                                    <div class="actions-menu" id="actions-${index}">
-                                        <a href="#" onclick="generateSellerUpdate(event, ${index}); return false;" class="action-item">
+                                    <div class="actions-menu" id="actions-${index}" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1a2d4a;border:2px solid #4a90d9;border-radius:6px;z-index:9999;margin-top:4px;box-shadow:0 8px 24px rgba(0,0,0,0.8);">
+                                        <a href="#" onclick="generateSellerUpdateByIndex(event, ${index}); return false;" style="display:block;padding:12px 16px;color:#e0e6f0;text-decoration:none;font-size:0.9rem;border-bottom:1px solid #2a3f5f;transition:all 0.2s;" onmouseover="this.style.background='#2E5090';this.style.color='white'" onmouseout="this.style.background='';this.style.color='#e0e6f0'">
                                             📱 Seller Update
                                         </a>
-                                        <a href="#" onclick="copyToClipboard(event, '${escapeHtml(address)}'); return false;" class="action-item">
+                                        <a href="#" onclick="copyToClipboard(event, '${escapeHtml(address)}'); return false;" style="display:block;padding:12px 16px;color:#e0e6f0;text-decoration:none;font-size:0.9rem;border-bottom:1px solid #2a3f5f;transition:all 0.2s;" onmouseover="this.style.background='#2E5090';this.style.color='white'" onmouseout="this.style.background='';this.style.color='#e0e6f0'">
                                             📋 Copy Address
                                         </a>
-                                        <a href="https://maps.google.com/?q=${encodeURIComponent(address)}" target="_blank" class="action-item">
+                                        <a href="https://maps.google.com/?q=${encodeURIComponent(address)}" target="_blank" style="display:block;padding:12px 16px;color:#e0e6f0;text-decoration:none;font-size:0.9rem;transition:all 0.2s;" onmouseover="this.style.background='#2E5090';this.style.color='white'" onmouseout="this.style.background='';this.style.color='#e0e6f0'">
                                             🗺️ View on Map
                                         </a>
-                                        ${propertyLink ? `<a href="${propertyLink}" target="_blank" class="action-item">🔗 ${linkText}</a>` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -249,6 +255,58 @@
             if (value >= 1000000) return '$' + (value / 1000000).toFixed(2) + 'M';
             if (value >= 1000) return '$' + (value / 1000).toFixed(0) + 'K';
             return '$' + value.toFixed(0);
+        }
+        
+        // Generate Seller Update by Index (looks up from stored data)
+        function generateSellerUpdateByIndex(event, index) {
+            event.stopPropagation();
+            
+            const listingData = currentListings[index];
+            if (!listingData) {
+                alert('Error: Listing data not found');
+                return;
+            }
+            
+            // Extract fields
+            const sellerName = listingData['Sellers Name'] || 'Seller';
+            const address = listingData['Address'] || 'Property';
+            const price = parseFloat(listingData['List Price']) || 0;
+            const dom = listingData['Days on Market'] || '--';
+            const zillowViews = listingData['Zillow Views'] || '0';
+            const zillowSaves = listingData['Zillow Saves'] || '0';
+            const showings = listingData['Showings Since Last'] || '0';
+            const inquiries = listingData['Total Inquiries'] || '0';
+            const feedback = listingData['Resent Agent Feedback'] || '';
+            
+            // Format the message
+            const message = `Hi ${sellerName},
+
+Update for ${address}:
+
+📊 THE NUMBERS
+• Price: ${formatCurrency(price)}
+• Days on Market: ${dom}
+
+🏠 ONLINE ACTIVITY  
+• Zillow: ${zillowViews} views, ${zillowSaves} saves
+• Showings: ${showings}
+• Inquiries: ${inquiries}
+
+💬 AGENT FEEDBACK:
+${feedback ? feedback.trim() : 'No recent feedback.'}
+
+— Lars, Sherlock HQ`;
+            
+            // Copy to clipboard
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(message).then(() => {
+                    alert('✅ Copied!\n\n' + message + '\n\nPaste into your text message.');
+                }).catch(() => {
+                    alert(message + '\n\n(Copy this text to send to seller)');
+                });
+            } else {
+                alert(message + '\n\n(Copy this text to send to seller)');
+            }
         }
         
         // Actions Dropdown Functions
