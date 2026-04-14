@@ -235,77 +235,29 @@
         
         document.addEventListener('DOMContentLoaded', loadListings);
         
-        // SELLER UPDATE SKILL
-        // Generates formatted Telegram message for specific listing
+        // SELLER UPDATE SKILL (SIMPLIFIED)
         function generateSellerUpdate(btn, listingData) {
-            // Extract fields from Google Sheet (exact column names)
+            // Extract basic fields
             const sellerName = listingData['Sellers Name'] || 'Seller';
-            const address = listingData['Address'] || 'Property Address';
-            const listDate = listingData['List Date'] || '';
+            const address = listingData['Address'] || 'Property';
             const listPrice = parseFloat(listingData['List Price']) || 0;
-            const originalPrice = parseFloat(listingData['Original List Price']) || listPrice;
-            
-            // Online Activity
+            const dom = listingData['Days on Market'] || '--';
             const zillowViews = listingData['Zillow Views'] || '0';
             const zillowSaves = listingData['Zillow Saves'] || '0';
-            const saveRatio = listingData['Save Ratio'] || '0%';
-            const lastSaveRatio = listingData['Last Save Ratio'] || '0%';
-            const zillowTotalSaves = listingData['Zillow Total Saves'] || '0';
-            const homesViewsCurrent = listingData['Homes Views'] || '0';
-            const homesViewsLast = listingData['Homes Views Last'] || '0';
-            const homesChange = listingData['Homes Change'] || '0';
-            const whichIs = listingData['Which Is'] || 'below average';
             
-            // Showings & Inquiries
-            const showingsSinceLast = listingData['Showings Since Last'] || listingData['Inquiries'] || '0';
-            const inquiries = listingData['Inquiries'] || listingData['Total Inquiries'] || '0';
+            // Simple formatted message
+            const message = `Seller Update\n\n${address}\n\nPrice: ${formatCurrency(listPrice)}\nDays on Market: ${dom}\nZillow Views: ${zillowViews}\nSaves: ${zillowSaves}`;
             
-            // Market Activity
-            const listingsInArea = listingData['Number of Listings in area'] || '0';
-            const listingCountChange = listingData['Listing Count Change'] || '0';
-            const pendingUnits = listingData['# of Pending Units'] || '0';
-            const priceReductions = listingData['# of Price Reductions'] || '0';
-            const currentListingInArea = listingData['Current Listing in Area'] || '';
+            // Simple alert for now
+            alert(message + '\n\n(Copy this text to send to seller)');
             
-            // Notes
-            const additionalInfo = listingData['Additional Info'] || '';
-            
-            // Format the message (structured for SMS/Telegram copy)
-            const message = `Hi ${sellerName},
-
-Update for your listing at ${address}:
-
-THE NUMBERS
-• Listed: ${listDate}
-• Original Price: ${formatCurrency(originalPrice)}
-• Current Price: ${formatCurrency(listPrice)}
-
-ONLINE ACTIVITY
-• Zillow: ${zillowViews} views, ${zillowSaves} saves
-• Save Ratio: ${saveRatio} (last: ${lastSaveRatio})
-• Total Zillow Saves: ${zillowTotalSaves}
-• Homes.com: ${homesViewsCurrent} views (last: ${homesViewsLast})
-• Change: ${homesChange} — currently ${whichIs}
-
-SHOWINGS & INQUIRIES
-• Showings since last update: ${showingsSinceLast}
-• Inquiries: ${inquiries}
-
-NEIGHBORHOOD ACTIVITY
-• Active listings in area: ${listingsInArea}
-• Change: ${listingCountChange}
-• Pending units: ${pendingUnits}
-• Price reductions: ${priceReductions}
-• Comparison: ${currentListingInArea ? `[${currentListingInArea}]` : '[N/A]'}
-
-NOTES:
-${additionalInfo ? additionalInfo.trim() : 'No additional updates.'}
-
-— Lars
-Sherlock HQ`;
-            
-            // Show modal with copyable text
-            showSellerUpdateModal(message, address, sellerName);
+            // Copy to clipboard
+            navigator.clipboard.writeText(message).then(() => {
+                btn.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    btn.textContent = 'Seller Update';
+                }, 2000);
+            });
         }
         
         // Telegram Bot Config
