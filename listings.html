@@ -170,10 +170,28 @@
                                     <span>${baths} baths</span>
                                     <span>${sqft} sqft</span>
                                 </div>
+                                
+                                <!-- Property Link -->
                                 ${propertyLink ? `<a href="${propertyLink}" target="_blank" style="display:block;color:var(--accent-teal);font-size:0.85rem;margin-bottom:0.5rem;">${linkText}</a>` : ''}
-                                <button class="btn btn-sm btn-outline seller-update-btn" onclick="generateSellerUpdate(this, ${JSON.stringify(l).replace(/'/g, "\\'")})">
-                                    📱 Seller Update
-                                </button>
+                                
+                                <!-- Actions Dropdown -->
+                                <div class="listing-actions">
+                                    <button class="actions-toggle" onclick="toggleActions(${index}, event)">
+                                        ⚡ Actions ⏷
+                                    </button>
+                                    <div class="actions-menu" id="actions-${index}">
+                                        <a href="#" onclick="generateSellerUpdate(event, ${index}); return false;" class="action-item">
+                                            📱 Seller Update
+                                        </a>
+                                        <a href="#" onclick="copyToClipboard(event, '${escapeHtml(address)}'); return false;" class="action-item">
+                                            📋 Copy Address
+                                        </a>
+                                        <a href="https://maps.google.com/?q=${encodeURIComponent(address)}" target="_blank" class="action-item">
+                                            🗺️ View on Map
+                                        </a>
+                                        ${propertyLink ? `<a href="${propertyLink}" target="_blank" class="action-item">🔗 ${linkText}</a>` : ''}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -231,6 +249,59 @@
             if (value >= 1000000) return '$' + (value / 1000000).toFixed(2) + 'M';
             if (value >= 1000) return '$' + (value / 1000).toFixed(0) + 'K';
             return '$' + value.toFixed(0);
+        }
+        
+        // Actions Dropdown Functions
+        function toggleActions(index, event) {
+            event.stopPropagation();
+            
+            // Close all other menus
+            document.querySelectorAll('.actions-menu.open').forEach(menu => {
+                if (menu.id !== `actions-${index}`) {
+                    menu.classList.remove('open');
+                }
+            });
+            
+            // Toggle this menu
+            const menu = document.getElementById(`actions-${index}`);
+            if (menu) {
+                menu.classList.toggle('open');
+            }
+        }
+        
+        // Close menus when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.listing-actions')) {
+                document.querySelectorAll('.actions-menu.open').forEach(menu => {
+                    menu.classList.remove('open');
+                });
+            }
+        });
+        
+        // Helper: Copy to clipboard
+        async function copyToClipboard(event, text) {
+            event.stopPropagation();
+            try {
+                await navigator.clipboard.writeText(text);
+                // Visual feedback - could add toast notification
+                const btn = event.target;
+                const original = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                setTimeout(() => btn.textContent = original, 1500);
+            } catch (err) {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            }
+        }
+        
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' };
+            return text.replace(/[&<>"']/g, c => map[c]);
         }
         
         document.addEventListener('DOMContentLoaded', loadListings);
@@ -453,6 +524,72 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(46,80,144,0.4);
         }
+        
+        /* Actions Dropdown */
+        .listing-actions {
+            position: relative;
+            margin-top: 0.5rem;
+        }
+        
+        .actions-toggle {
+            background: linear-gradient(135deg, var(--bg-tertiary), #2a3f5f);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: all var(--transition-fast);
+            width: 100%;
+        }
+        
+        .actions-toggle:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-teal);
+        }
+        
+        .actions-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            z-index: 100;
+            overflow: hidden;
+            margin-top: 4px;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .actions-menu.open {
+            display: block;
+        }
+        
+        .action-item {
+            display: block;
+            padding: 0.6rem 0.75rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: all var(--transition-fast);
+        }
+        
+        .action-item:last-child {
+            border-bottom: none;
+        }
+        
+        .action-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
         @media (max-width: 768px) {
             .modal-content {
                 width: 95%;
