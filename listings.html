@@ -137,11 +137,24 @@
                     const baths = l['Total Baths'] || l['Full Baths'] || '--';
                     const sqft = l['Apx SqFt(Htd/Cooled)'] || '--';
                     const photoUrl = l['Photo URL'] || '';
+                    const homesUrl = l['Homes Link'] || '';
+                    const zillowUrl = l['Zillow Link'] || '';
                     const mlsNumber = l['List Number'] || '';
                     
                     const sellerName = l['Sellers Name'] || 'Seller';
                     const listDate = l['List Date'] || '';
                     const dom = l['Days on Market'] || '--';
+                    
+                    // Determine property link priority: Homes.com → Zillow → none
+                    let propertyLink = '';
+                    let linkText = '';
+                    if (homesUrl) {
+                        propertyLink = homesUrl;
+                        linkText = '🏠 View on Homes.com';
+                    } else if (zillowUrl) {
+                        propertyLink = zillowUrl;
+                        linkText = '📍 View on Zillow';
+                    }
                     
                     return `
                         <div class="listing-card" data-mls="${mlsNumber || i}">
@@ -157,7 +170,7 @@
                                     <span>${baths} baths</span>
                                     <span>${sqft} sqft</span>
                                 </div>
-                                ${mlsNumber ? `<a href="https://search.my850.com/property/${mlsNumber}" target="_blank" style="display:block;color:var(--accent-teal);font-size:0.85rem;margin-bottom:0.5rem;">🔗 View on my850</a>` : ''}
+                                ${propertyLink ? `<a href="${propertyLink}" target="_blank" style="display:block;color:var(--accent-teal);font-size:0.85rem;margin-bottom:0.5rem;">${linkText}</a>` : ''}
                                 <button class="btn btn-sm btn-outline seller-update-btn" onclick="generateSellerUpdate(this, ${JSON.stringify(l).replace(/'/g, "\\'")})">
                                     📱 Seller Update
                                 </button>
