@@ -139,8 +139,12 @@
                     const photoUrl = l['Photo URL'] || '';
                     const mlsNumber = l['List Number'] || '';
                     
+                    const sellerName = l['Sellers Name'] || 'Seller';
+                    const listDate = l['List Date'] || '';
+                    const dom = l['Days on Market'] || '--';
+                    
                     return `
-                        <div class="listing-card">
+                        <div class="listing-card" data-mls="${mlsNumber || i}">
                             <div class="listing-image">
                                 ${photoUrl ? `<img src="${photoUrl}" alt="${address}">` : '🏠'}
                             </div>
@@ -153,7 +157,10 @@
                                     <span>${baths} baths</span>
                                     <span>${sqft} sqft</span>
                                 </div>
-                                ${mlsNumber ? `<a href="https://search.my850.com/property/${mlsNumber}" target="_blank" style="color:var(--accent-teal);font-size:0.85rem;">View on my850 →</a>` : ''}
+                                ${mlsNumber ? `<a href="https://search.my850.com/property/${mlsNumber}" target="_blank" style="display:block;color:var(--accent-teal);font-size:0.85rem;margin-bottom:0.5rem;">🔗 View on my850</a>` : ''}
+                                <button class="btn btn-sm btn-outline seller-update-btn" onclick="generateSellerUpdate(this, ${JSON.stringify(l).replace(/'/g, "\\'")})">
+                                    📱 Seller Update
+                                </button>
                             </div>
                         </div>
                     `;
@@ -214,7 +221,180 @@
         }
         
         document.addEventListener('DOMContentLoaded', loadListings);
+        
+        // SELLER UPDATE SKILL
+        // Generates formatted Telegram message for specific listing
+        function generateSellerUpdate(btn, listingData) {
+            // Extract fields
+            const address = listingData.Address || 'Property';
+            const listPrice = parseFloat(listingData['List Price']) || 0;
+            const dom = listingData['Days on Market'] || '--';
+            const showings = listingData['Total Showings'] || listingData['Showings Since Last'] || '0';
+            const inquiries = listingData['Total Inquiries'] || '0';
+            const zillowViews = listingData['Zillow Views'] || listingData['Zillow Saves'] || '--';
+            const agentFeedback = listingData['Resent Agent Feedback'] || '';
+            const notes = listingData['Additional Info'] || '';
+            
+            // Format the message
+            const message = `🦞 SHERLOCK UPDATE — ${address}
+
+📊 MARKETING STATUS:
+💰 List Price: ${formatCurrency(listPrice)}
+📅 Days on Market: ${dom}
+👀 Showings: ${showings}
+📩 Inquiries: ${inquiries}
+🎯 Zillow Activity: ${zillowViews} views/saves
+
+💬 AGENT FEEDBACK:
+${agentFeedback ? agentFeedback.trim() : 'No recent agent feedback.'}
+
+📝 NOTES:
+${notes ? notes.trim().substring(0, 300) + (notes.length > 300 ? '...' : '') : 'No additional notes.'}
+
+— From Sherlock HQ Dashboard`;
+            
+            // Show modal with copyable text
+            showSellerUpdateModal(message, address);
+        }
+        
+        function showSellerUpdateModal(message, propertyName) {
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'seller-update-modal';
+            modal.innerHTML = `
+                <div class="modal-overlay" onclick="closeSellerModal()"></div>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>📱 Seller Update — ${propertyName.substring(0, 30)}${propertyName.length > 30 ? '...' : ''}</h3>
+                        <button class="modal-close" onclick="closeSellerModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <textarea id="sellerUpdateText" readonly>${message}</textarea>
+                        <p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem;">
+                            📋 Click "Copy Message" then paste into Telegram
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" onclick="copySellerMessage()">📋 Copy Message</button>
+                        <button class="btn btn-outline" onclick="closeSellerModal()">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            document.getElementById('sellerUpdateText').select();
+        }
+        
+        function closeSellerModal() {
+            const modal = document.querySelector('.seller-update-modal');
+            if (modal) modal.remove();
+        }
+        
+        function copySellerMessage() {
+            const textarea = document.getElementById('sellerUpdateText');
+            textarea.select();
+            document.execCommand('copy');
+            
+            // Show feedback
+            const btn = document.querySelector('.modal-footer .btn-primary');
+            const original = btn.textContent;
+            btn.textContent = '✓ Copied!';
+            btn.style.background = 'var(--success)';
+            setTimeout(() => {
+                btn.textContent = original;
+                btn.style.background = '';
+            }, 1500);
+        }
     </script>
     
+    <!-- Seller Update Modal Styles -->
+    <style>
+        .seller-update-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+        }
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            z-index: 10001;
+        }
+        .modal-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }
+        .modal-body {
+            padding: var(--spacing-lg);
+        }
+        #sellerUpdateText {
+            width: 100%;
+            min-height: 250px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-md);
+            color: var(--text-primary);
+            font-family: monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+        .modal-footer {
+            padding: var(--spacing-lg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: var(--spacing-sm);
+            justify-content: flex-end;
+        }
+        .seller-update-btn {
+            margin-top: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent-teal));
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .seller-update-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46,80,144,0.4);
+        }
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: var(--spacing-md);
+            }
+        }
+    </style>
 </body>
 </html>
