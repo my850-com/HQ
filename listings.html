@@ -238,39 +238,87 @@
         // SELLER UPDATE SKILL
         // Generates formatted Telegram message for specific listing
         function generateSellerUpdate(btn, listingData) {
-            // Extract fields
-            const address = listingData.Address || 'Property';
+            // Extract fields from Google Sheet (exact column names)
+            const sellerName = listingData['Sellers Name'] || 'Seller';
+            const address = listingData['Address'] || 'Property Address';
+            const listDate = listingData['List Date'] || '';
             const listPrice = parseFloat(listingData['List Price']) || 0;
-            const dom = listingData['Days on Market'] || '--';
-            const showings = listingData['Total Showings'] || listingData['Showings Since Last'] || '0';
-            const inquiries = listingData['Total Inquiries'] || '0';
-            const zillowViews = listingData['Zillow Views'] || listingData['Zillow Saves'] || '--';
-            const agentFeedback = listingData['Resent Agent Feedback'] || '';
-            const notes = listingData['Additional Info'] || '';
+            const originalPrice = parseFloat(listingData['Original List Price']) || listPrice;
             
-            // Format the message
-            const message = `🦞 SHERLOCK UPDATE — ${address}
+            // Online Activity
+            const zillowViews = listingData['Zillow Views'] || '0';
+            const zillowSaves = listingData['Zillow Saves'] || '0';
+            const saveRatio = listingData['Save Ratio'] || '0%';
+            const lastSaveRatio = listingData['Last Save Ratio'] || '0%';
+            const zillowTotalSaves = listingData['Zillow Total Saves'] || '0';
+            const homesViewsCurrent = listingData['Homes Views'] || '0';
+            const homesViewsLast = listingData['Homes Views Last'] || '0';
+            const homesChange = listingData['Homes Change'] || '0';
+            const whichIs = listingData['Which Is'] || 'below average';
+            
+            // Showings & Inquiries
+            const showingsSinceLast = listingData['Showings Since Last'] || listingData['Inquiries'] || '0';
+            const inquiries = listingData['Inquiries'] || listingData['Total Inquiries'] || '0';
+            
+            // Market Activity
+            const listingsInArea = listingData['Number of Listings in area'] || '0';
+            const listingCountChange = listingData['Listing Count Change'] || '0';
+            const pendingUnits = listingData['# of Pending Units'] || '0';
+            const priceReductions = listingData['# of Price Reductions'] || '0';
+            const currentListingInArea = listingData['Current Listing in Area'] || '';
+            
+            // Notes
+            const additionalInfo = listingData['Additional Info'] || '';
+            
+            // Format the message (structured for SMS/Telegram copy)
+            const message = `Hi ${sellerName},
 
-📊 MARKETING STATUS:
-💰 List Price: ${formatCurrency(listPrice)}
-📅 Days on Market: ${dom}
-👀 Showings: ${showings}
-📩 Inquiries: ${inquiries}
-🎯 Zillow Activity: ${zillowViews} views/saves
+Update for your listing at ${address}:
 
-💬 AGENT FEEDBACK:
-${agentFeedback ? agentFeedback.trim() : 'No recent agent feedback.'}
+THE NUMBERS
+• Listed: ${listDate}
+• Original Price: ${formatCurrency(originalPrice)}
+• Current Price: ${formatCurrency(listPrice)}
 
-📝 NOTES:
-${notes ? notes.trim().substring(0, 300) + (notes.length > 300 ? '...' : '') : 'No additional notes.'}
+ONLINE ACTIVITY
+• Zillow: ${zillowViews} views, ${zillowSaves} saves
+• Save Ratio: ${saveRatio} (last: ${lastSaveRatio})
+• Total Zillow Saves: ${zillowTotalSaves}
+• Homes.com: ${homesViewsCurrent} views (last: ${homesViewsLast})
+• Change: ${homesChange} — currently ${whichIs}
 
-— From Sherlock HQ Dashboard`;
+SHOWINGS & INQUIRIES
+• Showings since last update: ${showingsSinceLast}
+• Inquiries: ${inquiries}
+
+NEIGHBORHOOD ACTIVITY
+• Active listings in area: ${listingsInArea}
+• Change: ${listingCountChange}
+• Pending units: ${pendingUnits}
+• Price reductions: ${priceReductions}
+• Comparison: ${currentListingInArea ? `[${currentListingInArea}]` : '[N/A]'}
+
+NOTES:
+${additionalInfo ? additionalInfo.trim() : 'No additional updates.'}
+
+— Lars
+Sherlock HQ`;
             
             // Show modal with copyable text
-            showSellerUpdateModal(message, address);
+            showSellerUpdateModal(message, address, sellerName);
         }
         
-        function showSellerUpdateModal(message, propertyName) {
+        // Telegram Bot Config
+        const TELEGRAM_BOT_TOKEN = '8726369953:AAGJJ8fcf5uhcvUBwXZEPvApAQnSwhYeRBU';
+        const TELEGRAM_CHAT_ID = '-5101742438';
+        
+        let currentMessageForTelegram = '';
+        let currentPropertyName = '';
+        
+        function showSellerUpdateModal(message, propertyName, sellerName) {
+            currentMessageForTelegram = message;
+            currentPropertyName = propertyName;
+            
             // Create modal
             const modal = document.createElement('div');
             modal.className = 'seller-update-modal';
@@ -284,18 +332,69 @@ ${notes ? notes.trim().substring(0, 300) + (notes.length > 300 ? '...' : '') : '
                     <div class="modal-body">
                         <textarea id="sellerUpdateText" readonly>${message}</textarea>
                         <p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem;">
-                            📋 Click "Copy Message" then paste into Telegram
+                            📋 Your update is ready. Copy to text message or send directly to Sherlock HQ.
                         </p>
                     </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-primary" onclick="copySellerMessage()">📋 Copy Message</button>
-                        <button class="btn btn-outline" onclick="closeSellerModal()">Close</button>
+                    <div class="modal-footer" style="flex-wrap:wrap;gap:10px;">
+                        <button class="btn btn-primary" onclick="copySellerMessage()" style="flex:1;min-width:120px;">📋 Copy to Clipboard</button>
+                        <button class="btn btn-success" onclick="sendToTelegram()" style="flex:1;min-width:120px;background:var(--success);">🚀 Send to Sherlock HQ</button>
+                        <button class="btn btn-outline" onclick="closeSellerModal()" style="flex:1;min-width:100px;">Close</button>
                     </div>
                 </div>
             `;
             
             document.body.appendChild(modal);
             document.getElementById('sellerUpdateText').select();
+        }
+        
+        // Send directly to Telegram
+        async function sendToTelegram() {
+            const btn = document.querySelector('.modal-footer .btn-success');
+            const originalText = btn.textContent;
+            btn.textContent = '📡 Sending...';
+            btn.disabled = true;
+            
+            try {
+                const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: TELEGRAM_CHAT_ID,
+                        text: currentMessageForTelegram,
+                        parse_mode: 'HTML'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.ok) {
+                    btn.textContent = '✅ Sent!';
+                    btn.style.background = '#28a745';
+                    
+                    // Log success
+                    console.log('✅ Seller update sent to Telegram:', currentPropertyName);
+                    
+                    setTimeout(() => {
+                        closeSellerModal();
+                    }, 1500);
+                } else {
+                    throw new Error(data.description || 'Send failed');
+                }
+            } catch (error) {
+                console.error('Telegram send failed:', error);
+                btn.textContent = '❌ Failed';
+                btn.style.background = '#dc3545';
+                
+                // Fallback: show copy option
+                alert('Send failed. Click "Copy to Clipboard" and paste manually into Telegram.');
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                    btn.style.background = '';
+                }, 2000);
+            }
         }
         
         function closeSellerModal() {
