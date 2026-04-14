@@ -129,6 +129,10 @@
                 document.getElementById('listingsCount').textContent = activeListings.length + ' properties';
                 document.getElementById('avgPrice').textContent = 'Avg: ' + formatCurrency(avgPrice);
                 
+                // Store count in localStorage for dashboard cross-reference
+                localStorage.setItem('activeListingsCount', activeListings.length);
+                localStorage.setItem('activeListingsLastUpdated', new Date().toISOString());
+                
                 // Store listings globally for lookup
                 currentListings = activeListings;
                 

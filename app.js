@@ -581,7 +581,21 @@ async function initData() {
 // ================= ACTIVE LISTINGS COUNT =================
 async function fetchActiveListingsCount() {
     try {
-        // Use local JSON file (no CORS issues on GitHub Pages)
+        // First, check if listings.html saved a count from Google Sheets (most accurate)
+        const savedCount = localStorage.getItem('activeListingsCount');
+        const lastUpdated = localStorage.getItem('activeListingsLastUpdated');
+        
+        // If we have a recent count (within last 24 hours), use it
+        if (savedCount && lastUpdated) {
+            const hoursSinceUpdate = (Date.now() - new Date(lastUpdated).getTime()) / (1000 * 60 * 60);
+            if (hoursSinceUpdate < 24) {
+                SAMPLE_DATA.metrics.activeListings = parseInt(savedCount);
+                console.log('Using cached count from listings page:', savedCount);
+                return;
+            }
+        }
+        
+        // Otherwise fall back to team-listings.json
         const response = await fetch('team-listings.json');
         
         if (!response.ok) throw new Error('Failed to load');
