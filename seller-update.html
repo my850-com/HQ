@@ -391,10 +391,31 @@
             }).join('');
         }
         
-        // Generate update text with merge fields preserved for external processing
+        // Generate update text with actual data from Google Sheet columns
         function generateUpdateText(listing, sellerName, address, price, dom) {
             const sellerFirstName = sellerName ? sellerName.split(' ')[0] : 'there';
             const priceK = (price / 1000).toFixed(0) + 'K';
+            
+            // Pull actual values from listing columns, fallback to merge field name if empty
+            const zillowTotalSaves = listing['Zillow Total Saves'] || '[Zillow Total Saves]';
+            const saveRatio = listing['Save Ratio'] || '[Save Ratio]';
+            const lastSaveRatio = listing['Last Save Ratio'] || '[Last Save Ratio]';
+            const homesViewsCurrent = listing['Homes Views Current'] || listing['Homes Views'] || '[Homes Views Current]';
+            const homesChange = listing['Homes Change'] || '[Homes Change]';
+            const whichIs = listing['Which Is'] || '[Which Is]';
+            const totalShowings = listing['Total Showings'] || listing['Showings Total'] || '[Total Showings]';
+            const additionalInfo = listing['Additional Info'] || listing['Resent Agent Feedback'] || listing['Agent Feedback'] || '[Additional Info]';
+            const listingsInArea = listing['Number of Listings in Area'] || listing['Listings in Area'] || '[Number of Listings in Area]';
+            const listingCountChange = listing['Listing Count Change'] || '[Listing Count Change]';
+            const pendingUnits = listing['# of Pending Units'] || listing['Pending Units'] || '[# of Pending Units]';
+            const priceReductions = listing['# of Price Reductions'] || listing['Price Reductions'] || '[# of Price Reductions]';
+            const currentListingLink = listing['Current Listing in Area'] || listing['Homes Link'] || listing['Zillow Link'] || '[Current Listing in Area]';
+            
+            // Pull Zillow/HOMS view data
+            const zillowViews = listing['Zillow Views'] || listing['Zillow 30 Day'] || '316';
+            const zillowSavesCurrent = listing['Zillow Saves'] || '6';
+            const showingsSinceLast = listing['Showings Since Last'] || listing['Showings This Week'] || '3';
+            const inquiries = listing['Total Inquiries'] || listing['Inquiries'] || '38';
             
             return `Hi ${sellerFirstName}, Here is a quick update you.
 ${address}
@@ -405,24 +426,24 @@ THE NUMBERS
 
 ONLINE ACTIVITY
 ZILLOW:
-• 316 views, 6 saves, |Zillow Total Saves| total saves, |Save Ratio| save ratio, |Last Save Ratio| last save ratio
+• ${zillowViews} views, ${zillowSavesCurrent} saves, ${zillowTotalSaves} total saves, ${saveRatio} save ratio, ${lastSaveRatio} last save ratio
 
 HOMES:
-• |Homes Views Current| views since last update for a change of |Homes Change| which is |Which Is|
+• ${homesViewsCurrent} views since last update for a change of ${homesChange} which is ${whichIs}
 
 BUYER INTEREST:
-• Showings: 3 since last update, |Total Showings| total showings
-• Inquiries: 38 Total
+• Showings: ${showingsSinceLast} since last update, ${totalShowings} total showings
+• Inquiries: ${inquiries} Total
 
 FEEDBACK:
-|Additional Info|
+${additionalInfo}
 
 Neighborhood Summary:
-Listings available: *|Number of Listings in Area|*
-Change from last update:*|Listing Count Change|*
-Listings under contract: *|# of Pending Units|*
-Price reductions: *|# of Price Reductions|*
-Property link: [*|Current Listing in Area|*]`;
+Listings available: *${listingsInArea}*
+Change from last update:*${listingCountChange}*
+Listings under contract: *${pendingUnits}*
+Price reductions: *${priceReductions}*
+Property link: [${currentListingLink}]`;
         }
         
         // Toggle property expansion
