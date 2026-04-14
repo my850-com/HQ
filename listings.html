@@ -180,10 +180,10 @@
                                 <!-- Property Link -->
                                 ${propertyLink ? `<a href="${propertyLink}" target="_blank" style="display:block;color:var(--accent-teal);font-size:0.85rem;margin-bottom:0.5rem;">${linkText}</a>` : ''}
                                 
-                                <!-- Information Button -->
-                                <button onclick="showPropertyInfo(${index})" style="margin-top:10px;width:100%;background:linear-gradient(135deg,#2E5090,#20C997);color:white;border:none;padding:10px;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;">
-                                    ℹ️ Information
-                                </button>
+                                <!-- Seller Update Button -->
+                                <a href="seller-update.html?property=${index}" style="display:block;margin-top:10px;width:100%;background:linear-gradient(135deg,#2E5090,#20C997);color:white;border:none;padding:10px;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;text-decoration:none;text-align:center;" target="_blank">
+                                    📱 Seller Update
+                                </a>
                             </div>
                         </div>
                     `;
