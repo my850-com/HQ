@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buyer Leads | MY850 HQ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .buyer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+        .buyer-title h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: var(--spacing-xs);
+        }
+        .buyer-title p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .back-link {
+            color: var(--accent-teal);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-weight: 500;
+        }
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .filter-select {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            min-width: 150px;
+        }
+        .buyer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: var(--spacing-lg);
+        }
+        .buyer-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: transform var(--transition-fast);
+        }
+        .buyer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+        .buyer-header-card {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+        .buyer-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .buyer-location {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+        .buyer-budget {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--success);
+        }
+        .priority-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+        .priority-hot {
+            background: rgba(220, 53, 69, 0.2);
+            color: #ff6b6b;
+        }
+        .priority-warm {
+            background: rgba(253, 126, 20, 0.2);
+            color: #fd7e14;
+        }
+        .priority-cold {
+            background: rgba(108, 117, 125, 0.2);
+            color: #adb5bd;
+        }
+        .buyer-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+        .buyer-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .buyer-details.expanded {
+            max-height: 500px;
+        }
+        .details-content {
+            padding: var(--spacing-lg);
+            background: rgba(0,0,0,0.2);
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .detail-value {
+            font-weight: 500;
+        }
+        .contact-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .contact-btn {
+            flex: 1;
+            padding: 0.6rem 1rem;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-email {
+            background: linear-gradient(135deg, #2E5090, #20C997);
+            color: white;
+        }
+        .btn-phone {
+            background: linear-gradient(135deg, #28a745, #20C997);
+            color: white;
+        }
+        .btn-notes {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        .contact-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        .buyer-status {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .follow-up-warning {
+            color: #fd7e14;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        .loading-buyers {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        .error-message {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: var(--danger);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            text-align: center;
+        }
+        .card-header-wrapper {
+            position: relative;
+            padding-top: 2.5rem;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <span class="logo-icon">👥</span>
+                <div class="logo-text">
+                    <h1>My850 HQ</h1>
+                    <span class="logo-tagline">Buyer Leads</span>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <a href="index.html" class="back-link">← Back to Dashboard</a>
+        </div>
+    </header>
+
+    <main class="main-container">
+        
+        <div class="buyer-header">
+            <div class="buyer-title">
+                <h1>Buyer Leads</h1>
+                <p id="leadCount">Loading...</p>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar">
+            <select class="filter-select" id="priorityFilter" onchange="applyFilters()">
+                <option value="all">All Priorities</option>
+                <option value="Hot">🔥 Hot</option>
+                <option value="Warm">🟡 Warm</option>
+                <option value="Cold">🔵 Cold</option>
+            </select>
+            <select class="filter-select" id="propertyTypeFilter" onchange="applyFilters()">
+                <option value="all">All Property Types</option>
+                <option value="Single Family">Single Family</option>
+                <option value="Condo">Condo</option>
+                <option value="Townhome">Townhome</option>
+                <option value="Mobile Home">Mobile Home</option>
+            </select>
+            <select class="filter-select" id="sourceFilter" onchange="applyFilters()">
+                <option value="all">All Sources</option>
+                <option value="Homebot">Homebot</option>
+                <option value="Sign Call">Sign Call</option>
+                <option value="Referral">Referral</option>
+                <option value="Zillow">Zillow</option>
+                <option value="Website">Website</option>
+            </select>
+            <input type="text" class="filter-select" id="searchFilter" placeholder="Search buyers..." onkeyup="applyFilters()">
+        </div>
+        
+        <!-- Leads Grid -->
+        <div class="buyer-grid" id="buyerGrid">
+            <div class="loading-buyers">
+                <div class="loading-spinner"></div>
+                <p>Loading buyer leads...</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Google Sheet CSV URL for Buyer Leads tab
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1d_UzZrIs4oO5Z3Nshc_UO4Fcorbimmm6rKovIyybdcg/gviz/tq?tqx=out:csv&sheet=Buyer%20Leads';
+        
+        let allLeads = [];
+        let currentLeads = [];
+        
+        async function loadBuyerLeads() {
+            const grid = document.getElementById('buyerGrid');
+            
+            try {
+                const response = await fetch(SHEET_CSV_URL, {
+                    headers: { 'Accept': 'text/csv' }
+                });
+                
+                if (!response.ok) throw new Error('HTTP ' + response.status);
+                
+                const csv = await response.text();
+                if (!csv || csv.trim().length === 0) throw new Error('Empty CSV');
+                
+                allLeads = parseCSV(csv);
+                currentLeads = [...allLeads];
+                
+                // Update count
+                document.getElementById('leadCount').textContent = 
+                    allLeads.length + ' active buyer lead' + (allLeads.length !== 1 ? 's' : '');
+                
+                renderLeads(currentLeads);
+                
+                // Save count for dashboard
+                try {
+                    localStorage.setItem('buyerLeadsCount', allLeads.length);
+                    localStorage.setItem('buyerLeadsLastUpdated', new Date().toISOString());
+                } catch(e) {}
+                
+                console.log('Loaded', allLeads.length, 'buyer leads');
+                
+            } catch (error) {
+                console.error('Error loading leads:', error);
+                grid.innerHTML = '<div class="error-message"><p>❌ Failed to load buyer leads</p><p style="font-size:0.8rem;margin-top:10px;">' + error.message + '</p><button onclick="loadBuyerLeads()">Retry</button></div>';
+            }
+        }
+        
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            if (lines.length < 2) return [];
+            
+            const headers = parseCSVLine(lines[0]);
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+                if (row.Name || row.name) data.push(row);
+            }
+            
+            return data;
+        }
+        
+        function parseCSVLine(line) {
+            const values = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (const char of line) {
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    values.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            values.push(current.trim());
+            return values;
+        }
+        
+        function renderLeads(leads) {
+            const grid = document.getElementById('buyerGrid');
+            
+            if (leads.length === 0) {
+                grid.innerHTML = '<div class="error-message"><p>No buyer leads match your filters.</p></div>';
+                return;
+            }
+            
+            grid.innerHTML = leads.map((l, index) => {
+                const name = l.Name || l.name || 'Unknown';
+                const email = l.Email || l.email || '';
+                const phone = l.Phone || l.phone || '';
+                const priority = (l.Priority || l.priority || 'Cold').toLowerCase();
+                const location = l.Location || l.location || 'Location TBD';
+                const propertyType = l['Property Type'] || l.propertyType || 'Not specified';
+                const budgetRaw = l['Budget/Price'] || l.budget || l['Asking Price'] || '0';
+                const budget = parseFloat(budgetRaw) || 0;
+                const timeFrame = l['Time Frame'] || l.timeFrame || 'Not specified';
+                const source = l.Source || l.source || 'Unknown';
+                const dateCreated = l['Date Created'] || l.dateCreated || '';
+                const lastContact = l['Last Contact'] || l.lastContact || '';
+                const notes = l.Notes || l.notes || '';
+                
+                // Determine priority class
+                let priorityClass = 'priority-cold';
+                if (priority.includes('hot')) priorityClass = 'priority-hot';
+                else if (priority.includes('warm')) priorityClass = 'priority-warm';
+                
+                // Check if follow-up needed (>7 days)
+                let followUpHtml = '';
+                if (lastContact) {
+                    const daysSince = daysSinceContact(lastContact);
+                    if (daysSince > 7) {
+                        followUpHtml = `<div class="follow-up-warning">⚠️ ${daysSince} days since last contact</div>`;
+                    }
+                }
+                
+                return `
+                    <div class="buyer-card" data-index="${index}">
+                        <div class="card-header-wrapper">
+                            <span class="priority-badge ${priorityClass}">${priority.toUpperCase()}</span>
+                            <div class="buyer-header-card" onclick="toggleLead(${index})">
+                                <div class="buyer-name">${name}</div>
+                                <div class="buyer-location">${location}</div>
+                                <div class="buyer-budget">${budget ? '$' + (budget/1000).toFixed(0) + 'K' : 'Budget TBD'}</div>
+                                <div class="buyer-status">
+                                    <span class="buyer-badge">${propertyType}</span>
+                                    <span class="buyer-badge">${source}</span>
+                                    <span class="buyer-badge">${timeFrame}</span>
+                                </div>
+                                ${followUpHtml}
+                            </div>
+                        </div>
+                        <div class="buyer-details" id="details-${index}">
+                            <div class="details-content">
+                                <div class="detail-row">
+                                    <span class="detail-label">Location</span>
+                                    <span class="detail-value">${location}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Property Type</span>
+                                    <span class="detail-value">${propertyType}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Budget</span>
+                                    <span class="detail-value">${budget ? '$' + budget.toLocaleString() : 'Not specified'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Time Frame</span>
+                                    <span class="detail-value">${timeFrame}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Source</span>
+                                    <span class="detail-value">${source}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Date Added</span>
+                                    <span class="detail-value">${formatDate(dateCreated)}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Last Contact</span>
+                                    <span class="detail-value">${formatDate(lastContact) || 'Never'}</span>
+                                </div>
+                                ${notes ? `
+                                <div class="detail-row">
+                                    <span class="detail-label">Notes</span>
+                                    <span class="detail-value" style="font-size:0.85rem;opacity:0.9;">${notes}</span>
+                                </div>
+                                ` : ''}
+                                <div class="contact-actions">
+                                    ${email ? `<button class="contact-btn btn-email" onclick="openEmail('${escapeJs(email)}', '${escapeJs(name)}', event)">✉️ Email</button>` : ''}
+                                    ${phone ? `<button class="contact-btn btn-phone" onclick="openPhone('${escapeJs(phone)}', event)">📞 Call</button>` : ''}
+                                    <button class="contact-btn btn-notes" onclick="quickNote(${index}, event)">📝 Note</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function applyFilters() {
+            const priority = document.getElementById('priorityFilter').value;
+            const propertyType = document.getElementById('propertyTypeFilter').value;
+            const source = document.getElementById('sourceFilter').value;
+            const search = document.getElementById('searchFilter').value.toLowerCase();
+            
+            currentLeads = allLeads.filter(l => {
+                const lPriority = (l.Priority || l.priority || '').toLowerCase();
+                const lType = (l['Property Type'] || l.propertyType || '').toLowerCase();
+                const lSource = (l.Source || l.source || '').toLowerCase();
+                const lName = (l.Name || l.name || '').toLowerCase();
+                const lLocation = (l.Location || l.location || '').toLowerCase();
+                
+                if (priority !== 'all' && !lPriority.includes(priority.toLowerCase())) return false;
+                if (propertyType !== 'all' && !lType.includes(propertyType.toLowerCase())) return false;
+                if (source !== 'all' && !lSource.includes(source.toLowerCase())) return false;
+                if (search && !lName.includes(search) && !lLocation.includes(search)) return false;
+                
+                return true;
+            });
+            
+            renderLeads(currentLeads);
+            document.getElementById('leadCount').textContent = 
+                currentLeads.length + ' of ' + allLeads.length + ' leads';
+        }
+        
+        function toggleLead(index) {
+            const details = document.getElementById(`details-${index}`);
+            details.classList.toggle('expanded');
+        }
+        
+        function daysSinceContact(dateStr) {
+            if (!dateStr) return 0;
+            const contact = new Date(dateStr);
+            const now = new Date();
+            return Math.floor((now - contact) / (1000 * 60 * 60 * 24));
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            if (isNaN(date)) return dateStr;
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+        
+        function openEmail(email, name, event) {
+            event.stopPropagation();
+            const subject = encodeURIComponent('Following up on your home search');
+            const body = encodeURIComponent(`Hi ${name.split(' ')[0]},\n\n`);
+            window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+        }
+        
+        function openPhone(phone, event) {
+            event.stopPropagation();
+            window.open(`tel:${phone.replace(/\D/g,'')}`, '_self');
+        }
+        
+        function quickNote(index, event) {
+            event.stopPropagation();
+            const note = prompt('Add a quick note:');
+            if (note) {
+                alert('Note saved: ' + note);
+            }
+        }
+        
+        function escapeJs(str) {
+            return str.replace(/[\\']/g, '\\$&').replace(/\n/g, '\\n');
+        }
+        
+        // Load on page load
+        loadBuyerLeads();
+    </script>
+</body>
+</html>
