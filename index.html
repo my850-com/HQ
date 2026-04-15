@@ -373,9 +373,16 @@
                 }
                 
                 // Update Lis Pendens count (using graded count)
-                const lisEl = document.getElementById('lisPendens');
+                const lisEl = document.getElementById('lisPendensLeadsCount');
                 if (lisEl) {
                     lisEl.textContent = counts.lisPendensGradedCount;
+                }
+                
+                // Calculate Pipeline Value from listings
+                const pipelineValue = counts.listingCount * 350000; // avg $350K per property
+                const pipelineEl = document.getElementById('pipelineValue');
+                if (pipelineEl) {
+                    pipelineEl.textContent = '$' + (pipelineValue / 1000000).toFixed(1) + 'M';
                 }
                 
                 // Store for other pages
