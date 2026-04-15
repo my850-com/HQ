@@ -36,10 +36,10 @@
     <header class="header">
         <div class="header-left">
             <div class="logo">
-                <span class="logo-icon">🏠</span>
+                <span class="logo-icon">🦞</span>
                 <div class="logo-text">
-                    <h1>My Listings</h1>
-                    <span class="logo-tagline">Property Portfolio</span>
+                    <h1>MY850 HQ</h1>
+                    <span class="logo-tagline">Command Center</span>
                 </div>
             </div>
         </div>
@@ -47,6 +47,16 @@
             <a href="index.html" class="back-link">← Back to Dashboard</a>
         </div>
     </header>
+    
+    <!-- Page Title Banner -->
+    <div class="page-banner" style="background: var(--bg-secondary); padding: 1rem; border-bottom: 1px solid var(--border-color);">
+        <div class="main-container" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 style="margin: 0; font-size: 1.4rem;">🏠 Active Listings</h2>
+                <p style="margin: 0.25rem 0 0 0; color: var(--text-muted); font-size: 0.9rem;">Property Portfolio</p>
+            </div>
+        </div>
+    </div>
     
     <main class="main-container">
         
@@ -130,8 +140,14 @@
                 document.getElementById('avgPrice').textContent = 'Avg: ' + formatCurrency(avgPrice);
                 
                 // Store count in localStorage for dashboard cross-reference
-                localStorage.setItem('activeListingsCount', activeListings.length);
-                localStorage.setItem('activeListingsLastUpdated', new Date().toISOString());
+                // ALWAYS save to localStorage so index.html can read it
+                try {
+                    localStorage.setItem('activeListingsCount', activeListings.length.toString());
+                    localStorage.setItem('activeListingsLastUpdated', new Date().toISOString());
+                    console.log('Saved active listings count:', activeListings.length);
+                } catch (e) {
+                    console.error('Failed to save to localStorage:', e);
+                }
                 
                 // Store listings globally for lookup
                 currentListings = activeListings;
