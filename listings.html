@@ -3,703 +3,487 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Listings | MY850 HQ</title>
+    <title>Active Listings | MY850 HQ</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
-        .listings-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-xl); padding: var(--spacing-lg); background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border-color); }
-        .listings-title h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: var(--spacing-xs); }
-        .listings-title p { color: var(--text-muted); font-size: 0.9rem; }
-        .back-link { color: var(--accent-teal); text-decoration: none; display: flex; align-items: center; gap: var(--spacing-sm); font-weight: 500; }
-        .back-link:hover { color: var(--text-primary); }
-        .pipeline-summary { background: linear-gradient(135deg, var(--success), #34ce57); border-radius: var(--radius-md); padding: var(--spacing-lg); margin-bottom: var(--spacing-xl); display: flex; justify-content: space-between; }
-        .pipeline-value-label { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; }
-        .pipeline-value-number { font-size: 2.5rem; font-weight: 800; margin-top: var(--spacing-xs); }
-        .pipeline-stat { font-size: 0.9rem; opacity: 0.9; }
-        .listings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: var(--spacing-lg); }
-        .listing-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; transition: transform var(--transition-fast); }
-        .listing-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
-        .listing-image { height: 200px; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; }
-        .listing-image img { width: 100%; height: 100%; object-fit: cover; }
-        .listing-content { padding: var(--spacing-lg); }
-        .listing-address { font-size: 1.1rem; font-weight: 600; margin-bottom: var(--spacing-xs); }
-        .listing-location { color: var(--text-muted); font-size: 0.85rem; margin-bottom: var(--spacing-sm); }
-        .listing-price { font-size: 1.5rem; font-weight: 800; color: var(--success); margin-bottom: var(--spacing-sm); }
-        .listing-details { display: flex; gap: var(--spacing-md); margin-bottom: var(--spacing-sm); font-size: 0.9rem; color: var(--text-secondary); }
-        .listing-status { display: inline-block; padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; background: rgba(40, 167, 69, 0.2); color: var(--success); }
-        .loading-listings { text-align: center; padding: var(--spacing-xl); color: var(--text-muted); }
-        .error-message { background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); color: var(--danger); padding: var(--spacing-lg); border-radius: var(--radius-md); text-align: center; }
-    </style>
-</head>
-<body class="dark-mode">
-    
-    <header class="header">
-        <div class="header-left">
-            <div class="logo">
-                <span class="logo-icon">🦞</span>
-                <div class="logo-text">
-                    <h1>MY850 HQ</h1>
-                    <span class="logo-tagline">Command Center</span>
-                </div>
-            </div>
-        </div>
-        <div class="header-right">
-            <a href="index.html" class="back-link">← Back to Dashboard</a>
-        </div>
-    </header>
-    
-    <!-- Page Title Banner -->
-    <div class="page-banner" style="background: var(--bg-secondary); padding: 1rem; border-bottom: 1px solid var(--border-color);">
-        <div class="main-container" style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h2 style="margin: 0; font-size: 1.4rem;">🏠 Active Listings</h2>
-                <p style="margin: 0.25rem 0 0 0; color: var(--text-muted); font-size: 0.9rem;">Property Portfolio</p>
-            </div>
-        </div>
-    </div>
-    
-    <main class="main-container">
-        
-        <div class="listings-header">
-            <div class="listings-title">
-                <h1>Active Listings</h1>
-                <p>All properties currently on the market</p>
-            </div>
-        </div>
-        
-        <!-- Pipeline Value Summary -->
-        <div class="pipeline-summary" id="pipelineSummary">
-            <div>
-                <div class="pipeline-value-label">Total Pipeline Value</div>
-                <div class="pipeline-value-number" id="pipelineValue">$--</div>
-            </div>
-            <div style="text-align: right;">
-                <div class="pipeline-stat" id="listingsCount">-- properties</div>
-                <div class="pipeline-stat" id="avgPrice">Avg: $--</div>
-            </div>
-        </div>
-        
-        <!-- Listings Grid -->
-        <div class="listings-grid" id="listingsGrid">
-            <div class="loading-listings">
-                <div class="loading-spinner"></div>
-                <p>Loading listings...</p>
-            </div>
-        </div>
-        
-    </main>
-    
-    <script>
-        // Load from Google Sheets CSV (auto-updates when sheet changes)
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdI2q5qlHpihVdEm7ev8GHjCqWQQ7NTX0C2MnNRYWkd2eAweBjdPRA2zEG-4xq5dJ4FdvqhgOCkuXU/pub?gid=494197748&single=true&output=csv';
-        
-        // Global storage for listings data
-        let currentListings = [];
-        
-        async function loadListings() {
-            const grid = document.getElementById('listingsGrid');
-            
-            try {
-                // Fetch with explicit headers
-                const response = await fetch(SHEET_CSV_URL, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'text/csv,text/plain,*/*'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error('HTTP ' + response.status + ': ' + response.statusText);
-                }
-                
-                const csv = await response.text();
-                
-                if (!csv || csv.trim().length === 0) {
-                    throw new Error('Empty CSV response');
-                }
-                
-                const listings = parseCSV(csv);
-                
-                // Filter Active listings (Status column = 'A')
-                const activeListings = listings.filter(l => l.Status === 'A');
-                
-                if (activeListings.length === 0) {
-                    grid.innerHTML = '<div class="error-message">No active listings found.</div>';
-                    return;
-                }
-                
-                // Calculate pipeline value
-                const totalValue = activeListings.reduce((sum, l) => {
-                    return sum + (parseFloat(l['List Price']) || 0);
-                }, 0);
-                const avgPrice = totalValue / activeListings.length;
-                
-                // Update stats
-                document.getElementById('pipelineValue').textContent = formatCurrency(totalValue);
-                document.getElementById('listingsCount').textContent = activeListings.length + ' properties';
-                document.getElementById('avgPrice').textContent = 'Avg: ' + formatCurrency(avgPrice);
-                
-                // Store count in localStorage for dashboard cross-reference
-                // ALWAYS save to localStorage so index.html can read it
-                try {
-                    localStorage.setItem('activeListingsCount', activeListings.length.toString());
-                    localStorage.setItem('activeListingsLastUpdated', new Date().toISOString());
-                    console.log('Saved active listings count:', activeListings.length);
-                } catch (e) {
-                    console.error('Failed to save to localStorage:', e);
-                }
-                
-                // Store listings globally for lookup
-                currentListings = activeListings;
-                
-                // Render listings
-                grid.innerHTML = activeListings.map((l, index) => {
-                    const price = parseFloat(l['List Price']) || 0;
-                    const address = l.Address || 'No address';
-                    const city = l.City || '';
-                    const state = l.State || 'FL';
-                    const county = l.County || '';
-                    const beds = l.Bedrooms || '--';
-                    const baths = l['Total Baths'] || l['Full Baths'] || '--';
-                    const sqft = l['Apx SqFt(Htd/Cooled)'] || '--';
-                    const photoUrl = l['Photo URL'] || '';
-                    const homesUrl = l['Homes Link'] || '';
-                    const zillowUrl = l['Zillow Link'] || '';
-                    const mlsNumber = l['List Number'] || '';
-                    
-                    const sellerName = l['Sellers Name'] || 'Seller';
-                    const listDate = l['List Date'] || '';
-                    const dom = l['Days on Market'] || '--';
-                    
-                    // Determine property link priority: Homes.com → Zillow → none
-                    let propertyLink = '';
-                    let linkText = '';
-                    if (homesUrl) {
-                        propertyLink = homesUrl;
-                        linkText = '🏠 View on Homes.com';
-                    } else if (zillowUrl) {
-                        propertyLink = zillowUrl;
-                        linkText = '📍 View on Zillow';
-                    }
-                    
-                    return `
-                        <div class="listing-card" data-mls="${mlsNumber || index}">
-                            <div class="listing-image">
-                                ${photoUrl ? `<img src="${photoUrl}" alt="${address}">` : '🏠'}
-                            </div>
-                            <div class="listing-content">
-                                <div class="listing-address">${address}</div>
-                                <div class="listing-location">${city}, ${county} County</div>
-                                <div class="listing-price">${formatCurrency(price)}</div>
-                                <div class="listing-details">
-                                    <span>${beds} beds</span>
-                                    <span>${baths} baths</span>
-                                    <span>${sqft} sqft</span>
-                                </div>
-                                
-                                <!-- Property Link -->
-                                ${propertyLink ? `<a href="${propertyLink}" target="_blank" style="display:block;color:var(--accent-teal);font-size:0.85rem;margin-bottom:0.5rem;">${linkText}</a>` : ''}
-                                
-                                <!-- Seller Update Button -->
-                                <a href="seller-update.html?property=${index}" style="display:block;margin-top:10px;width:100%;background:linear-gradient(135deg,#2E5090,#20C997);color:white;border:none;padding:10px;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;text-decoration:none;text-align:center;" target="_blank">
-                                    📱 Seller Update
-                                </a>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-                
-                console.log('Loaded', activeListings.length, 'active listings from Google Sheets');
-                
-            } catch (error) {
-                console.error('Error loading listings:', error);
-                grid.innerHTML = '<div class="error-message">Failed to load listings. Check console for details.</div>';
-            }
-        }
-        
-        // Parse CSV to array of objects
-        function parseCSV(csvText) {
-            const lines = csvText.trim().split('\n');
-            if (lines.length < 2) return [];
-            
-            const headers = parseCSVLine(lines[0]);
-            const data = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                const values = parseCSVLine(lines[i]);
-                const obj = {};
-                headers.forEach((header, index) => {
-                    obj[header] = values[index] || '';
-                });
-                data.push(obj);
-            }
-            
-            return data;
-        }
-        
-        // Parse a single CSV line (handles quotes)
-        function parseCSVLine(line) {
-            const values = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (const char of line) {
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    values.push(current.trim());
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            values.push(current.trim());
-            return values;
-        }
-        
-        function formatCurrency(value) {
-            if (value >= 1000000) return '$' + (value / 1000000).toFixed(2) + 'M';
-            if (value >= 1000) return '$' + (value / 1000).toFixed(0) + 'K';
-            return '$' + value.toFixed(0);
-        }
-        
-        // Show Property Info Popup
-        function showPropertyInfo(index) {
-            const l = currentListings[index];
-            if (!l) {
-                alert('Error: Listing data not found');
-                return;
-            }
-            
-            const address = l['Address'] || 'Property';
-            const price = parseFloat(l['List Price']) || 0;
-            const dom = l['Days on Market'] || '--';
-            const sellerName = l['Sellers Name'] || 'Seller';
-            const zillowViews = l['Zillow Views'] || '0';
-            const zillowSaves = l['Zillow Saves'] || '0';
-            
-            const popup = prompt(
-                `📋 ${address}\n\n` +
-                `💰 Price: ${formatCurrency(price)}\n` +
-                `📅 DOM: ${dom}\n` +
-                `👤 Seller: ${sellerName}\n\n` +
-                `What would you like to do?\n` +
-                `1. Type "seller" for Seller Update\n` +
-                `2. Type "copy" to copy address\n` +
-                `3. Type "map" to view on map\n\n` +
-                `Or Cancel to close.`,
-                ''
-            );
-            
-            if (popup === null) return; // Cancelled
-            
-            const choice = popup.toLowerCase().trim();
-            
-            if (choice === 'seller' || choice.includes('seller') || choice.includes('update')) {
-                // Generate seller update
-                const message = `Hi ${sellerName},\n\nUpdate for ${address}:\n\n📊 Numbers:\n• Price: ${formatCurrency(price)}\n• Days on Market: ${dom}\n\n🏠 Online Activity:\n• Zillow: ${zillowViews} views, ${zillowSaves} saves\n\n— Lars, Sherlock HQ`;
-                
-                navigator.clipboard.writeText(message).then(() => {
-                    alert('✅ COPIED!\n\n' + message + '\n\nPaste into text message to send to seller.');
-                }).catch(() => {
-                    alert(message + '\n\n(Copy this text)');
-                });
-                
-            } else if (choice === 'copy' || choice.includes('copy') || choice.includes('address')) {
-                navigator.clipboard.writeText(address).then(() => {
-                    alert('✅ Address copied: ' + address);
-                }).catch(() => {
-                    alert(address + '\n\n(Copy this address)');
-                });
-                
-            } else if (choice === 'map' || choice.includes('map')) {
-                window.open(`https://maps.google.com/?q=${encodeURIComponent(address)}`, '_blank');
-                
-            } else {
-                alert('Type "seller", "copy", or "map" next time!');
-            }
-        }
-        
-        // Generate Seller Update by Index (looks up from stored data)
-        function generateSellerUpdateByIndex(event, index) {
-            event.stopPropagation();
-            
-            const listingData = currentListings[index];
-            if (!listingData) {
-                alert('Error: Listing data not found');
-                return;
-            }
-            
-            // Extract fields
-            const sellerName = listingData['Sellers Name'] || 'Seller';
-            const address = listingData['Address'] || 'Property';
-            const price = parseFloat(listingData['List Price']) || 0;
-            const dom = listingData['Days on Market'] || '--';
-            const zillowViews = listingData['Zillow Views'] || '0';
-            const zillowSaves = listingData['Zillow Saves'] || '0';
-            const showings = listingData['Showings Since Last'] || '0';
-            const inquiries = listingData['Total Inquiries'] || '0';
-            const feedback = listingData['Resent Agent Feedback'] || '';
-            
-            const message = `Hi ${sellerName},\n\nUpdate for ${address}:\n\n📊 THE NUMBERS\n• Price: ${formatCurrency(price)}\n• Days on Market: ${dom}\n\n🏠 ONLINE ACTIVITY  \n• Zillow: ${zillowViews} views, ${zillowSaves} saves\n• Showings: ${showings}\n• Inquiries: ${inquiries}\n\n💬 AGENT FEEDBACK:\n${feedback ? feedback.trim() : 'No recent feedback.'}\n\n— Lars, Sherlock HQ`;
-            
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(message).then(() => {
-                    alert('✅ Copied!\n\n' + message + '\n\nPaste into your text message.');
-                }).catch(() => {
-                    alert(message + '\n\n(Copy this text to send to seller)');
-                });
-            } else {
-                alert(message + '\n\n(Copy this text to send to seller)');
-            }
-        }
-        
-        // Actions Dropdown Functions
-        function toggleActions(index, event) {
-            event.stopPropagation();
-            
-            // Close all other menus
-            document.querySelectorAll('.actions-menu.open').forEach(menu => {
-                if (menu.id !== `actions-${index}`) {
-                    menu.classList.remove('open');
-                }
-            });
-            
-            // Toggle this menu
-            const menu = document.getElementById(`actions-${index}`);
-            if (menu) {
-                menu.classList.toggle('open');
-            }
-        }
-        
-        // Close menus when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.listing-actions')) {
-                document.querySelectorAll('.actions-menu.open').forEach(menu => {
-                    menu.classList.remove('open');
-                });
-            }
-        });
-        
-        // Helper: Copy to clipboard
-        async function copyToClipboard(event, text) {
-            event.stopPropagation();
-            try {
-                await navigator.clipboard.writeText(text);
-                // Visual feedback - could add toast notification
-                const btn = event.target;
-                const original = btn.textContent;
-                btn.textContent = '✓ Copied!';
-                setTimeout(() => btn.textContent = original, 1500);
-            } catch (err) {
-                // Fallback
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-            }
-        }
-        
-        function escapeHtml(text) {
-            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' };
-            return text.replace(/[&<>"']/g, c => map[c]);
-        }
-        
-        document.addEventListener('DOMContentLoaded', loadListings);
-        
-        // SELLER UPDATE SKILL (SIMPLIFIED)
-        function generateSellerUpdate(btn, listingData) {
-            // Extract basic fields
-            const sellerName = listingData['Sellers Name'] || 'Seller';
-            const address = listingData['Address'] || 'Property';
-            const listPrice = parseFloat(listingData['List Price']) || 0;
-            const dom = listingData['Days on Market'] || '--';
-            const zillowViews = listingData['Zillow Views'] || '0';
-            const zillowSaves = listingData['Zillow Saves'] || '0';
-            
-            // Simple formatted message
-            const message = `Seller Update\n\n${address}\n\nPrice: ${formatCurrency(listPrice)}\nDays on Market: ${dom}\nZillow Views: ${zillowViews}\nSaves: ${zillowSaves}`;
-            
-            // Simple alert for now
-            alert(message + '\n\n(Copy this text to send to seller)');
-            
-            // Copy to clipboard
-            navigator.clipboard.writeText(message).then(() => {
-                btn.textContent = '✓ Copied!';
-                setTimeout(() => {
-                    btn.textContent = 'Seller Update';
-                }, 2000);
-            });
-        }
-        
-        // Telegram Bot Config
-        const TELEGRAM_BOT_TOKEN = '8726369953:AAGJJ8fcf5uhcvUBwXZEPvApAQnSwhYeRBU';
-        const TELEGRAM_CHAT_ID = '-5101742438';
-        
-        let currentMessageForTelegram = '';
-        let currentPropertyName = '';
-        
-        function showSellerUpdateModal(message, propertyName, sellerName) {
-            currentMessageForTelegram = message;
-            currentPropertyName = propertyName;
-            
-            // Create modal
-            const modal = document.createElement('div');
-            modal.className = 'seller-update-modal';
-            modal.innerHTML = `
-                <div class="modal-overlay" onclick="closeSellerModal()"></div>
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3>📱 Seller Update — ${propertyName.substring(0, 30)}${propertyName.length > 30 ? '...' : ''}</h3>
-                        <button class="modal-close" onclick="closeSellerModal()">×</button>
-                    </div>
-                    <div class="modal-body">
-                        <textarea id="sellerUpdateText" readonly>${message}</textarea>
-                        <p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem;">
-                            📋 Your update is ready. Copy to text message or send directly to Sherlock HQ.
-                        </p>
-                    </div>
-                    <div class="modal-footer" style="flex-wrap:wrap;gap:10px;">
-                        <button class="btn btn-primary" onclick="copySellerMessage()" style="flex:1;min-width:120px;">📋 Copy to Clipboard</button>
-                        <button class="btn btn-success" onclick="sendToTelegram()" style="flex:1;min-width:120px;background:var(--success);">🚀 Send to Sherlock HQ</button>
-                        <button class="btn btn-outline" onclick="closeSellerModal()" style="flex:1;min-width:100px;">Close</button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-            document.getElementById('sellerUpdateText').select();
-        }
-        
-        // Send directly to Telegram
-        async function sendToTelegram() {
-            const btn = document.querySelector('.modal-footer .btn-success');
-            const originalText = btn.textContent;
-            btn.textContent = '📡 Sending...';
-            btn.disabled = true;
-            
-            try {
-                const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: TELEGRAM_CHAT_ID,
-                        text: currentMessageForTelegram,
-                        parse_mode: 'HTML'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.ok) {
-                    btn.textContent = '✅ Sent!';
-                    btn.style.background = '#28a745';
-                    
-                    // Log success
-                    console.log('✅ Seller update sent to Telegram:', currentPropertyName);
-                    
-                    setTimeout(() => {
-                        closeSellerModal();
-                    }, 1500);
-                } else {
-                    throw new Error(data.description || 'Send failed');
-                }
-            } catch (error) {
-                console.error('Telegram send failed:', error);
-                btn.textContent = '❌ Failed';
-                btn.style.background = '#dc3545';
-                
-                // Fallback: show copy option
-                alert('Send failed. Click "Copy to Clipboard" and paste manually into Telegram.');
-                
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.disabled = false;
-                    btn.style.background = '';
-                }, 2000);
-            }
-        }
-        
-        function closeSellerModal() {
-            const modal = document.querySelector('.seller-update-modal');
-            if (modal) modal.remove();
-        }
-        
-        function copySellerMessage() {
-            const textarea = document.getElementById('sellerUpdateText');
-            textarea.select();
-            document.execCommand('copy');
-            
-            // Show feedback
-            const btn = document.querySelector('.modal-footer .btn-primary');
-            const original = btn.textContent;
-            btn.textContent = '✓ Copied!';
-            btn.style.background = 'var(--success)';
-            setTimeout(() => {
-                btn.textContent = original;
-                btn.style.background = '';
-            }, 1500);
-        }
-    </script>
-    
-    <!-- Seller Update Modal Styles -->
-    <style>
-        .seller-update-modal {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8);
-        }
-        .modal-content {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            width: 90%;
-            max-width: 500px;
-            position: relative;
-            z-index: 10001;
-        }
-        .modal-header {
-            padding: var(--spacing-lg);
-            border-bottom: 1px solid var(--border-color);
+        .listings-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 2rem;
         }
-        .modal-header h3 {
-            margin: 0;
-            font-size: 1.1rem;
+        .listings-stats {
+            display: flex;
+            gap: 2rem;
         }
-        .modal-close {
+        .stat-box {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8f 100%);
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 150px;
+        }
+        .stat-box .number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #fff;
+        }
+        .stat-box .label {
+            font-size: 0.875rem;
+            color: #a0c4e8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-box.volume {
+            background: linear-gradient(135deg, #1a5f3c 0%, #2d8f5a 100%);
+        }
+        .stat-box.volume .label {
+            color: #a8e8c4;
+        }
+        .stat-box.revenue {
+            background: linear-gradient(135deg, #5f3a1e 0%, #8f5a2d 100%);
+        }
+        .stat-box.revenue .label {
+            color: #e8d4a8;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64b5f6;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        .back-link:hover {
+            color: #90caf9;
+        }
+        .listings-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        .listing-card {
+            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid #2a3f5f;
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .listing-card:hover {
+            border-color: #4a90d9;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(74, 144, 217, 0.2);
+        }
+        .listing-header {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        .listing-photo {
+            width: 120px;
+            height: 90px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: #2a3f5f;
+        }
+        .listing-main {
+            flex: 1;
+        }
+        .listing-address {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.25rem;
+        }
+        .listing-city {
+            font-size: 0.875rem;
+            color: #a0b4d0;
+        }
+        .listing-price {
+            text-align: right;
+        }
+        .price-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4ade80;
+        }
+        .projected-revenue {
+            font-size: 0.875rem;
+            color: #fbbf24;
+            margin-top: 0.25rem;
+        }
+        .listing-expand {
+            padding: 0.75rem;
             background: none;
             border: none;
-            color: var(--text-muted);
-            font-size: 1.5rem;
+            color: #64b5f6;
             cursor: pointer;
-            padding: 0;
-            width: 30px;
-            height: 30px;
+            font-size: 1.25rem;
+            transition: transform 0.3s;
         }
-        .modal-body {
-            padding: var(--spacing-lg);
+        .listing-expand.expanded {
+            transform: rotate(180deg);
         }
-        #sellerUpdateText {
-            width: 100%;
-            min-height: 250px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            padding: var(--spacing-md);
-            color: var(--text-primary);
-            font-family: monospace;
-            font-size: 0.9rem;
-            resize: vertical;
-        }
-        .modal-footer {
-            padding: var(--spacing-lg);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            gap: var(--spacing-sm);
-            justify-content: flex-end;
-        }
-        .seller-update-btn {
-            margin-top: 0.5rem;
-            padding: 0.4rem 0.8rem;
-            font-size: 0.8rem;
-            background: linear-gradient(135deg, var(--primary), var(--accent-teal));
-            color: white;
-            border: none;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: all var(--transition-fast);
-        }
-        .seller-update-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(46,80,144,0.4);
-        }
-        
-        /* Actions Dropdown */
-        .listing-actions {
-            position: relative;
-            margin-top: 0.5rem;
-        }
-        
-        .actions-toggle {
-            background: linear-gradient(135deg, var(--bg-tertiary), #2a3f5f);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            padding: 0.5rem 0.75rem;
-            font-size: 0.8rem;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            transition: all var(--transition-fast);
-            width: 100%;
-        }
-        
-        .actions-toggle:hover {
-            background: var(--bg-secondary);
-            border-color: var(--accent-teal);
-        }
-        
-        .actions-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: #1e2a4a;
-            border: 2px solid #2E5090;
-            border-radius: var(--radius-sm);
-            z-index: 1000;
+        .listing-details {
+            max-height: 0;
             overflow: hidden;
-            margin-top: 4px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            transition: max-height 0.4s ease;
+            background: rgba(0, 0, 0, 0.3);
         }
-        
-        .actions-menu.open {
-            display: block;
+        .listing-details.expanded {
+            max-height: 500px;
         }
-        
-        .action-item {
-            display: block;
-            padding: 0.75rem 1rem;
-            color: #a8c4e8;
-            text-decoration: none;
-            font-size: 0.85rem;
+        .details-content {
+            padding: 1.5rem;
+            border-top: 1px solid #2a3f5f;
+        }
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .detail-label {
+            font-size: 0.75rem;
+            color: #6b7a8f;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+        .detail-value {
+            font-size: 1rem;
+            color: #e0e6f0;
             font-weight: 500;
-            border-bottom: 1px solid rgba(46, 80, 144, 0.5);
-            transition: all var(--transition-fast);
         }
-        
-        .action-item:last-child {
-            border-bottom: none;
+        .details-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #2a3f5f;
         }
-        
-        .action-item:hover {
-            background: #2E5090;
-            color: white;
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
         }
-        
-        @media (max-width: 768px) {
-            .modal-content {
-                width: 95%;
-                margin: var(--spacing-md);
-            }
+        .listing-badges {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .badge-dom {
+            background: #374151;
+            color: #9ca3af;
+        }
+        .badge-type {
+            background: #1e40af;
+            color: #93c5fd;
+        }
+        .loading-listings {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7a8f;
         }
     </style>
+</head>
+<body class="dark-mode">
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <img src="sherlock-avatar.png" alt="MY850 HQ" class="logo-img" style="width: 40px; height: 40px; border-radius: 8px;">
+                <div class="logo-text">
+                    <h1>MY850 HQ</h1>
+                    <span class="logo-tagline">Active Listings</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <a href="index.html" class="back-link">← Back to Mission Control</a>
+
+        <div class="listings-header">
+            <h2>🏠 Active Listings Dashboard</h2>
+            <div class="listings-stats">
+                <div class="stat-box">
+                    <div class="number" id="activeCount">--</div>
+                    <div class="label">Active</div>
+                </div>
+                <div class="stat-box volume">
+                    <div class="number" id="totalVolume">$--</div>
+                    <div class="label">Volume</div>
+                </div>
+                <div class="stat-box revenue">
+                    <div class="number" id="projectedRevenue">$--</div>
+                    <div class="label">Proj. Revenue</div>
+                </div>
+            </div>
+        </div>
+
+        <section class="section">
+            <div class="listings-grid" id="listingsContainer">
+                <div class="loading-listings">
+                    <div class="loading-spinner"></div>
+                    <p>Loading active listings...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Fetch listings data
+        async function loadListings() {
+            try {
+                const response = await fetch('../team-listings.json');
+                const data = await response.json();
+                const listings = data.listings.filter(l => l.status === 'Active');
+                
+                // Store for seller update generation
+                listingsData = listings;
+                
+                // Calculate stats
+                const totalVolume = listings.reduce((sum, l) => sum + (l.listPrice || 0), 0);
+                const projectedRevenue = totalVolume * 0.0275;
+                
+                document.getElementById('activeCount').textContent = listings.length;
+                document.getElementById('totalVolume').textContent = '$' + (totalVolume / 1000000).toFixed(2) + 'M';
+                document.getElementById('projectedRevenue').textContent = '$' + (projectedRevenue / 1000).toFixed(0) + 'K';
+                
+                renderListings(listings);
+            } catch (error) {
+                console.error('Error loading listings:', error);
+                document.getElementById('listingsContainer').innerHTML = 
+                    '<p style="text-align: center; color: #ef4444;">Error loading listings. Please refresh.</p>';
+            }
+        }
+
+        function renderListings(listings) {
+            const container = document.getElementById('listingsContainer');
+            
+            if (listings.length === 0) {
+                container.innerHTML = '<p style="text-align: center;">No active listings found.</p>';
+                return;
+            }
+            
+            container.innerHTML = listings.map(listing => `
+                <div class="listing-card" data-mls="${listing.mlsNumber}">
+                    <div class="listing-header" onclick="toggleListing('${listing.mlsNumber}')">
+                        <img src="${listing.photoUrl || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 90%22><rect fill=%22%232a3f5f%22 width=%22120%22 height=%2290%22/></svg>'}" 
+                             alt="${listing.address}" class="listing-photo">
+                        <div class="listing-main">
+                            <div class="listing-address">${listing.address}</div>
+                            <div class="listing-city">${listing.city}, ${listing.state} ${listing.zip}</div>
+                            <div class="listing-badges">
+                                <span class="badge badge-type">${listing.propertyType || 'Unknown'}</span>
+                                <span class="badge badge-dom">${listing.daysOnMarket} DOM</span>
+                            </div>
+                        </div>
+                        <div class="listing-price">
+                            <div class="price-value">$${(listing.listPrice || 0).toLocaleString()}</div>
+                            <div class="projected-revenue">Proj: $${(listing.listPrice * 0.0275).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}</div>
+                        </div>
+                        <button class="listing-expand" id="expand-${listing.mlsNumber}">▼</button>
+                    </div>
+                    <div class="listing-details" id="details-${listing.mlsNumber}">
+                        <div class="details-content">
+                            <div class="details-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">MLS Number</span>
+                                    <span class="detail-value">${listing.mlsNumber}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Seller</span>
+                                    <span class="detail-value">${listing.sellerName || 'N/A'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">List Date</span>
+                                    <span class="detail-value">${listing.listingDate || 'N/A'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Expires</span>
+                                    <span class="detail-value">${listing.expirationDate || 'N/A'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Bed / Bath</span>
+                                    <span class="detail-value">${listing.bedrooms || 0} / ${listing.bathrooms || 'N/A'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Square Feet</span>
+                                    <span class="detail-value">${(listing.sqft || 0).toLocaleString()}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Year Built</span>
+                                    <span class="detail-value">${listing.yearBuilt || 'N/A'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Subdivision</span>
+                                    <span class="detail-value">${listing.subdivision || 'N/A'}</span>
+                                </div>
+                                ${listing.hoa ? `
+                                <div class="detail-item">
+                                    <span class="detail-label">HOA</span>
+                                    <span class="detail-value">${listing.hoa}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">HOA Fee</span>
+                                    <span class="detail-value">$${(listing.hoaFee || 0).toLocaleString()}/yr</span>
+                                </div>
+                                ` : ''}
+                                ${listing.taxes ? `
+                                <div class="detail-item">
+                                    <span class="detail-label">Taxes</span>
+                                    <span class="detail-value">$${(listing.taxes || 0).toLocaleString()}/yr</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                            ${listing.showingNotes ? `
+                            <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(74, 144, 217, 0.1); border-radius: 8px;">
+                                <span class="detail-label" style="color: #64b5f6;">Showing Notes</span>
+                                <p style="margin: 0.5rem 0 0 0; color: #e0e6f0; font-size: 0.9rem;">${listing.showingNotes}</p>
+                            </div>
+                            ` : ''}
+                            <div class="details-actions">
+                                <a href="https://search.my850.com/property/${listing.mlsNumber}" target="_blank" class="btn btn-primary btn-sm">
+                                    🔗 View on my850
+                                </a>
+                                <button class="btn btn-outline btn-sm" onclick="copyListingInfo('${listing.mlsNumber}')">
+                                    📋 Copy Info
+                                </button>
+                                <button class="btn btn-success btn-sm" onclick="generateSellerUpdate('${listing.mlsNumber}')">
+                                    ✉️ Seller Update
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleListing(mlsNumber) {
+            event.stopPropagation();
+            const details = document.getElementById(`details-${mlsNumber}`);
+            const expand = document.getElementById(`expand-${mlsNumber}`);
+            
+            details.classList.toggle('expanded');
+            expand.classList.toggle('expanded');
+        }
+
+        function copyListingInfo(mlsNumber) {
+            event.stopPropagation();
+            // Implementation for copying listing info to clipboard
+            showToast('Listing info copied to clipboard');
+        }
+
+        // Global variable to store listings data for update generation
+        let listingsData = [];
+
+        function generateSellerUpdate(mlsNumber) {
+            event.stopPropagation();
+            const listing = listingsData.find(l => l.mlsNumber === mlsNumber);
+            if (!listing) {
+                showToast('Error: Listing not found');
+                return;
+            }
+
+            const sellerFirstName = listing.sellerName ? listing.sellerName.split(' ')[0] : 'there';
+            const priceFormatted = (listing.listPrice / 1000).toFixed(0) + 'K';
+            
+            // Build the seller update with merge fields preserved
+            const updateTemplate = `Hi ${sellerFirstName}, Here is a quick update you.
+${listing.address}
+
+THE NUMBERS
+• Price: $${priceFormatted}
+• Days on Market: ${listing.daysOnMarket || 0}
+
+ONLINE ACTIVITY
+ZILLOW:
+• 316 views, 6 saves, |Zillow Total Saves| total saves, |Save Ratio| save ratio, |Last Save Ratio| last save ratio
+
+HOMES:
+• |Homes Views Current| views since last update for a change of |Homes Change| which is |Which Is|
+
+BUYER INTEREST:
+• Showings: 3 since last update, |Total Showings| total showings
+• Inquiries: 38 Total
+
+FEEDBACK:
+|Additional Info|
+
+Neighborhood Summary: 
+Listings available: *|Number of Listings in Area|* 
+Change from last update:*|Listing Count Change|*
+Listings under contract: *|# of Pending Units|* 
+Price reductions: *|# of Price Reductions|* 
+Property link: [*|Current Listing in Area|*]`;
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(updateTemplate).then(() => {
+                // Create expandable section to show the update
+                const details = document.getElementById(`details-${mlsNumber}`);
+                
+                // Check if update section already exists
+                let updateSection = document.getElementById(`update-${mlsNumber}`);
+                if (!updateSection) {
+                    updateSection = document.createElement('div');
+                    updateSection.id = `update-${mlsNumber}`;
+                    updateSection.className = 'seller-update-section';
+                    const safeMls = mlsNumber.replace(/"/g, '&quot;');
+                updateSection.innerHTML = '<div class="details-content" style="margin-top: 1rem; background: rgba(40, 167, 69, 0.1); border: 1px solid #28a745; border-radius: 8px;">' +
+                    '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">' +
+                    '<span class="detail-label" style="color: #28a745; font-weight: 600;">📧 Seller Update (copied to clipboard)</span>' +
+                    '<button class="btn btn-sm" onclick="document.getElementById(\'update-' + safeMls + '\').remove()" style="background: transparent; border: 1px solid #28a745; color: #28a745;">Close</button>' +
+                    '</div>' +
+                    '<pre style="white-space: pre-wrap; color: #e0e6f0; font-family: inherit; font-size: 0.9rem; line-height: 1.6; margin: 0;">' + updateTemplate.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>' +
+                    '</div>';
+                    details.appendChild(updateSection);
+                }
+                
+                // Ensure details section is expanded
+                details.classList.add('expanded');
+                document.getElementById(`expand-${mlsNumber}`).classList.add('expanded');
+                
+                showToast('Seller update copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                showToast('Failed to copy update');
+            });
+        }
+
+        function showToast(message) {
+            // Simple toast implementation
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 2rem;
+                right: 2rem;
+                background: #1e3a5f;
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Load on page load
+        loadListings();
+    </script>
 </body>
 </html>

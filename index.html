@@ -10,38 +10,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- External CSS -->
     <link rel="stylesheet" href="styles.css">
-    <!-- Google Sheets Connector -->
-    <script src="sheets-connector.js"></script>
 </head>
 <body class="dark-mode">
-    
-    <!-- ================= PASSWORD LOGIN OVERLAY ================= -->
-    <div id="loginOverlay" class="login-overlay">
-        <div class="login-box">
-            <div class="login-header">
-                <span class="login-icon">🦞</span>
-                <h1>MY850 HQ</h1>
-                <p>Mission Control Dashboard</p>
-            </div>
-            <div class="login-form">
-                <label for="passwordInput">Enter Password</label>
-                <input type="password" id="passwordInput" placeholder="Password" autofocus>
-                <p class="login-hint">Authorized personnel only</p>
-                <button id="loginButton" class="btn btn-primary btn-large">Access Dashboard</button>
-                <p id="loginError" class="login-error"></p>
-            </div>
-            <div class="login-footer">
-                <p>© 2026 MY850 Real Estate Team</p>
-                <p class="login-disclaimer">🔒 Confidential Lead Data — Internal Use Only</p>
-            </div>
-        </div>
-    </div>
-    
     <!-- ================= HEADER ================= -->
     <header class="header">
         <div class="header-left">
             <div class="logo">
-                <img src="sherlock-avatar.png" alt="Sherlock" class="logo-icon" style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%;">
+                <img src="sherlock-avatar.png" alt="MY850 HQ" class="logo-img" style="width: 40px; height: 40px; border-radius: 8px;">
                 <div class="logo-text">
                     <h1>MY850 HQ</h1>
                     <span class="logo-tagline">Command Center</span>
@@ -54,27 +29,7 @@
                 <a href="#tasks" class="nav-link">Tasks</a>
                 <a href="#analytics" class="nav-link">Analytics</a>
                 <a href="office.html" class="nav-link office-link">🤖 Office</a>
-                
-                <!-- Tools Dropdown Menu -->
-                <div class="nav-dropdown">
-                    <button class="nav-link dropdown-toggle">🧰 Tools ▼</button>
-                    <div class="dropdown-menu">
-                        <a href="#" class="dropdown-item" data-tool="mls">🔗 MLS Search</a>
-                        <a href="#" class="dropdown-item" data-tool="county">📍 County Records</a>
-                        <a href="#" class="dropdown-item" data-tool="zillow">🏠 Zillow</a>
-                        <a href="#" class="dropdown-item" data-tool="appraiser">📊 Appraiser</a>
-                        <a href="#" class="dropdown-item" data-tool="title">📄 Title Co</a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item" data-tool="lenders">💰 Lenders</a>
-                        <a href="#" class="dropdown-item" data-tool="crm">👥 CRM</a>
-                    </div>
-                </div>
             </nav>
-            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
         </div>
         <div class="header-right">
             <div class="live-clock" id="liveClock">
@@ -88,11 +43,6 @@
                 <span class="status-dot online"></span>
                 <span class="status-text">LIVE</span>
             </div>
-            <!-- Message Sherlock HQ Button -->
-            <a href="https://t.me/+CAifiPnXMc40OWVh" target="_blank" class="btn btn-primary hq-comms-btn" title="Message Sherlock HQ on Telegram">
-                <span class="btn-icon">🦞</span>
-                <span class="btn-text">HQ</span>
-            </a>
         </div>
     </header>
 
@@ -107,15 +57,35 @@
             </div>
             <div class="section-content" id="metricsContent">
                 <div class="metrics-grid">
-                    <!-- Active Listings - Clickable (Dynamic) -->
-                    <a href="listings.html" class="metric-card primary clickable" data-metric="listings">
+                    <!-- Active Listings -->
+                    <a href="listings.html" class="metric-card primary" data-metric="listings" style="text-decoration: none;">
                         <div class="metric-icon">🏠</div>
                         <div class="metric-info">
                             <div class="metric-label">Active Listings</div>
                             <div class="metric-value" id="activeListings">--</div>
-                            <div class="metric-trend up" id="listingsTrend">Loading...</div>
+                            <div class="metric-trend up">View All →</div>
                         </div>
                     </a>
+                    
+                    <!-- Buyer Leads -->
+                    <a href="buyer-leads.html" class="metric-card orange" id="buyerLeadsMetric" style="text-decoration: none;">
+                        <div class="metric-icon">💼</div>
+                        <div class="metric-info">
+                            <div class="metric-label">Buyer Leads</div>
+                            <div class="metric-value" id="buyerLeadsCount">--</div>
+                            <div class="metric-trend">View All →</div>
+                        </div>
+                    </a>
+                    
+                    <!-- Pipeline Value -->
+                    <div class="metric-card success" data-metric="pipeline">
+                        <div class="metric-icon">💰</div>
+                        <div class="metric-info">
+                            <div class="metric-label">Pipeline Value</div>
+                            <div class="metric-value" id="pipelineValue">$--</div>
+                            <div class="metric-trend up">+12% vs last month</div>
+                        </div>
+                    </div>
                     
                     <!-- Hot Leads -->
                     <div class="metric-card danger" data-metric="hotleads">
@@ -134,6 +104,16 @@
                             <div class="metric-label">Lis Pendens (MTD)</div>
                             <div class="metric-value" id="lisPendens">--</div>
                             <div class="metric-trend up">+8 new today</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Team Tasks -->
+                    <div class="metric-card purple" data-metric="tasks">
+                        <div class="metric-icon">✅</div>
+                        <div class="metric-info">
+                            <div class="metric-label">Team Tasks</div>
+                            <div class="metric-value" id="teamTasks">--</div>
+                            <div class="metric-trend">-- pending</div>
                         </div>
                     </div>
                     
@@ -368,62 +348,60 @@
     <div id="toastContainer" class="toast-container"></div>
 
     <!-- External JavaScript -->
-    <script>
-        // Mobile menu toggle
-        document.getElementById('mobileMenuToggle')?.addEventListener('click', function() {
-            this.classList.toggle('active');
-            document.querySelector('.header-nav').classList.toggle('active');
-        });
-        
-        // Close menu when clicking a link
-        document.querySelectorAll('.header-nav a').forEach(link => {
-            link.addEventListener('click', function() {
-                document.getElementById('mobileMenuToggle').classList.remove('active');
-                document.querySelector('.header-nav').classList.remove('active');
-            });
-        });
-    </script>
     <script src="app.js"></script>
-    <!-- Load Active Listings Count from Google Sheets -->
     <script>
-        const LISTINGS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdI2q5qlHpihVdEm7ev8GHjCqWQQ7NTX0C2MnNRYWkd2eAweBjdPRA2zEG-4xq5dJ4FdvqhgOCkuXU/pub?gid=494197748&single=true&output=csv';
+        const BUYER_LEADS_CSV_URL = 'https://docs.google.com/spreadsheets/d/1d_UzZrIs4oO5Z3Nshc_UO4Fcorbimmm6rKovIyybdcg/gviz/tq?tqx=out:csv&sheet=Buyer%20Leads';
         
-        async function loadActiveListingsCount() {
+        async function loadBuyerLeadsCount() {
             try {
-                const response = await fetch(LISTINGS_CSV_URL, {
-                    headers: { 'Accept': 'text/csv,text/plain,*/*' }
-                });
-                if (!response.ok) throw new Error('CSV fetch failed');
-                
+                const response = await fetch(BUYER_LEADS_CSV_URL, { headers: { 'Accept': 'text/csv' } });
                 const csv = await response.text();
-                const listings = parseCSV(csv);
-                const activeCount = listings.filter(l => l.Status === 'A').length;
+                const lines = csv.trim().split('\n');
+                // Count rows minus header
+                const count = lines.length > 1 ? lines.length - 1 : 0;
                 
-                document.getElementById('activeListings').textContent = activeCount;
-                document.getElementById('listingsTrend').textContent = 'View All →';
+                // Update the buyer leads count display
+                document.getElementById('buyerLeadsCount').textContent = count;
+                
+                // Store for other pages
+                localStorage.setItem('buyerLeadsCount', count);
+                localStorage.setItem('buyerLeadsLastUpdated', new Date().toISOString());
+                
             } catch (e) {
-                console.error('Active listings load failed:', e);
-                document.getElementById('activeListings').textContent = '11'; // fallback
-                document.getElementById('listingsTrend').textContent = 'View All →';
+                console.error('Error loading buyer leads:', e);
             }
         }
         
-        // Simple CSV parser
-        function parseCSV(csvText) {
-            const lines = csvText.trim().split('\n');
-            if (lines.length < 2) return [];
-            const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
-            const data = [];
-            for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(',');
-                const row = {};
-                headers.forEach((h, idx) => { row[h] = values[idx]?.replace(/"/g, '').trim() || ''; });
-                data.push(row);
+        // Load with other metrics
+        loadBuyerLeadsCount();
+        // Refresh every 5 minutes
+        setInterval(loadBuyerLeadsCount, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
+                    buyerCard.className = 'metric-card orange';
+                    metricsGrid.appendChild(buyerCard);
+                }
+                buyerCard.innerHTML = `
+                    <div class="metric-icon">💼</div>
+                    <div class="metric-info">
+                        <div class="metric-label">Buyer Leads</div>
+                        <div class="metric-value">${count}</div>
+                        <div class="metric-trend">Click to view →</div>
+                    </div>
+                `;
+                
+                // Store in localStorage for other pages
+                localStorage.setItem('buyerLeadsCount', count);
+                localStorage.setItem('buyerLeadsLastUpdated', new Date().toISOString());
+                
+            } catch (e) {
+                console.error('Error loading buyer leads:', e);
             }
-            return data;
         }
         
-        document.addEventListener('DOMContentLoaded', loadActiveListingsCount);
+        // Load with other metrics
+        loadBuyerLeadsCount();
     </script>
 </body>
 </html>

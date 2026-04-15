@@ -581,35 +581,40 @@ async function initData() {
 // ================= ACTIVE LISTINGS COUNT =================
 async function fetchActiveListingsCount() {
     try {
-        // First, check if listings.html saved a count from Google Sheets (most accurate)
+        // Always check localStorage FIRST before any fetch
         const savedCount = localStorage.getItem('activeListingsCount');
         const lastUpdated = localStorage.getItem('activeListingsLastUpdated');
         
-        // If we have a recent count (within last 24 hours), use it
-        if (savedCount && lastUpdated) {
-            const hoursSinceUpdate = (Date.now() - new Date(lastUpdated).getTime()) / (1000 * 60 * 60);
-            if (hoursSinceUpdate < 24) {
-                SAMPLE_DATA.metrics.activeListings = parseInt(savedCount);
-                console.log('Using cached count from listings page:', savedCount);
-                return;
+        // If we have ANY cached count, use it immediately (don't wait for fetch)
+        if (savedCount) {
+            SAMPLE_DATA.metrics.activeListings = parseInt(savedCount);
+            console.log('Using cached count:', savedCount);
+            
+            // Only fall back to JSON if cache is old (>24 hours)
+            if (lastUpdated) {
+                const hoursSinceUpdate = (Date.now() - new Date(lastUpdated).getTime()) / (1000 * 60 * 60);
+                if (hoursSinceUpdate < 24) {
+                    return; // Fresh cache, skip fetch entirely
+                }
             }
         }
         
-        // Otherwise fall back to team-listings.json
+        // Try team-listings.json as fallback (but don't overwrite valid cache)
         const response = await fetch('team-listings.json');
-        
         if (!response.ok) throw new Error('Failed to load');
         
         const data = await response.json();
         const activeCount = data.listings.filter(l => l.status === 'Active').length;
         
-        // Update the metrics
-        SAMPLE_DATA.metrics.activeListings = activeCount;
-        console.log('Loaded', activeCount, 'active listings from team-listings.json');
+        // Only update if we didn't have a valid cache
+        if (!savedCount) {
+            SAMPLE_DATA.metrics.activeListings = activeCount;
+            console.log('Loaded', activeCount, 'from team-listings.json');
+        }
         
     } catch (error) {
         console.error('Error fetching listings count:', error);
-        // Keep default value if fetch fails
+        // Keep cached/default value
     }
 }
 
