@@ -245,7 +245,8 @@
 
     <script>
         // Google Sheet CSV URL for Buyer Leads tab
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1d_UzZrIs4oO5Z3Nshc_UO4Fcorbimmm6rKovIyybdcg/gviz/tq?tqx=out:csv&sheet=Buyer%20Leads';
+        // Google Sheet CSV URL for Buyer Leads tab (published)
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdI2q5qlHpihVdEm7ev8GHjCqWQQ7NTX0C2MnNRYWkd2eAweBjdPRA2zEG-4xq5dJ4FdvqhgOCkuXU/pub?gid=97439156&single=true&output=csv';
         
         let allLeads = [];
         let currentLeads = [];
@@ -257,8 +258,12 @@
             const tbody = document.getElementById('buyerTableBody');
             
             try {
+                // Fetch with explicit headers (same as listings.html)
                 const response = await fetch(SHEET_CSV_URL, {
-                    headers: { 'Accept': 'text/csv' }
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/csv,text/plain,*/*'
+                    }
                 });
                 
                 if (!response.ok) throw new Error('HTTP ' + response.status);
