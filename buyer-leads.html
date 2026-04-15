@@ -211,6 +211,48 @@
             position: relative;
             padding-top: 2.5rem;
         }
+        .telegram-banner {
+            background: linear-gradient(135deg, #0088cc, #00a8e8);
+            color: white;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .telegram-icon {
+            font-size: 2rem;
+        }
+        .telegram-text {
+            flex: 1;
+        }
+        .telegram-text h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+        .telegram-text p {
+            margin: 0.25rem 0 0 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+        .telegram-btn {
+            background: rgba(255,255,255,0.9);
+            color: #0088cc;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .telegram-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body class="dark-mode">
@@ -266,6 +308,16 @@
                 <option value="Website">Website</option>
             </select>
             <input type="text" class="filter-select" id="searchFilter" placeholder="Search buyers..." onkeyup="applyFilters()">
+        </div>
+        
+        <!-- Telegram Connect Banner -->
+        <div class="telegram-banner">
+            <span class="telegram-icon">💬</span>
+            <div class="telegram-text">
+                <h3>Sherlock HQ Team Chat</h3>
+                <p>To update a lead or obtain more information, connect with the team on Telegram</p>
+            </div>
+            <a href="https://web.telegram.org/a/#-5101742438" target="_blank" class="telegram-btn">Open Telegram →</a>
         </div>
         
         <!-- Leads Grid -->
