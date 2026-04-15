@@ -6,7 +6,6 @@
     <title>Buyer Leads | MY850 HQ</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <script src="auth.js"></script>
     <style>
         .buyer-header {
             display: flex;
@@ -154,45 +153,6 @@
         .sort-active .sort-icon {
             opacity: 1;
         }
-        .telegram-banner {
-            background: linear-gradient(135deg, #2E5090 0%, #1a3a5c 100%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--radius-md);
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-        }
-        .telegram-banner p {
-            margin: 0;
-            color: #fff;
-            font-size: 0.9rem;
-        }
-        .telegram-banner a {
-            color: #4a9eff;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .telegram-banner a:hover {
-            color: #6fb3ff;
-        }
-        .telegram-btn {
-            background: linear-gradient(135deg, #4a9eff 0%, #2E5090 100%);
-            color: white;
-            padding: 0.6rem 1.2rem;
-            border-radius: var(--radius-sm);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        .telegram-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(74, 158, 255, 0.4);
-        }
     </style>
 </head>
 <body class="dark-mode">
@@ -219,12 +179,6 @@
                 <h1>Buyer Leads</h1>
                 <p id="leadCount">Loading...</p>
             </div>
-        </div>
-
-        <!-- Telegram Communication Banner -->
-        <div class="telegram-banner">
-            <p>💬 <strong>Sherlock HQ Team Chat</strong> — To update a lead or obtain more information, connect with the team on Telegram</p>
-            <a href="https://t.me/+CAifiPnXMc40OWVh" target="_blank" class="telegram-btn">Open Sherlock HQ ↗</a>
         </div>
 
         <!-- Filters -->
@@ -289,9 +243,12 @@
         </section>
     </main>
 
+    <!-- Data Connector for stable Google Sheets access -->
+    <script src="data-connector.js"></script>
+    
     <script>
-        // Load from local JSON (same pattern as listings.html)
-        // To update: replace buyer-leads.json with exported data from Google Sheets
+        // Google Sheet CSV URL for Buyer Leads tab (fallback)
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1d_UzZrIs4oO5Z3Nshc_UO4Fcorbimmm6rKovIyybdcg/gviz/tq?tqx=out:csv&sheet=Buyer%20Leads';
         
         let allLeads = [];
         let currentLeads = [];
@@ -303,33 +260,22 @@
             const tbody = document.getElementById('buyerTableBody');
             
             try {
-                // Fetch local JSON file
-                const response = await fetch('buyer-leads.json');
-                
-                if (!response.ok) throw new Error('HTTP ' + response.status);
-                
-                const data = await response.json();
-                
-                // Convert JSON format to match expected structure
-                if (data.leads && Array.isArray(data.leads)) {
-                    allLeads = data.leads.map(lead => ({
-                        Name: lead.name || '',
-                        Email: lead.email || '',
-                        Phone: lead.phone || '',
-                        Location: lead.location || '',
-                        Priority: lead.priority || 'Cold',
-                        'Budget/Price': lead.budget || '',
-                        'Property Type': lead.propertyType || '',
-                        'Time Frame': lead.timeFrame || lead.timeframe || '',
-                        Source: lead.source || '',
-                        'Date Created': lead.dateCreated || '',
-                        'Last Contact': lead.lastContact || '',
-                        Notes: lead.notes || ''
-                    }));
+                // Use DataConnector for stable fetching if available
+                let leads;
+                if (typeof DataConnector !== 'undefined') {
+                    leads = await DataConnector.getData('buyerLeads');
                 } else {
-                    allLeads = [];
+                    // Fallback to direct fetch
+                    const response = await fetch(SHEET_CSV_URL, {
+                        headers: { 'Accept': 'text/csv' }
+                    });
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    const csv = await response.text();
+                    if (!csv || csv.trim().length === 0) throw new Error('Empty CSV');
+                    leads = parseCSV(csv);
                 }
                 
+                allLeads = leads;
                 currentLeads = [...allLeads];
                 
                 // Update count
@@ -348,8 +294,46 @@
                 
             } catch (error) {
                 console.error('Error loading leads:', error);
-                tbody.innerHTML = '<tr><td colspan="9" class="loading-cell"><p>No buyer leads data available.</p><p style="font-size:0.8rem;color:var(--text-muted);margin-top:10px;">To add data, export your Buyer Leads sheet as JSON and replace buyer-leads.json</p></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="error-message"><p>❌ Failed to load buyer leads</p><p style="font-size:0.8rem;margin-top:10px;">' + error.message + '</p><button onclick="loadBuyerLeads()">Retry</button></td></tr>';
             }
+        }
+        
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            if (lines.length < 2) return [];
+            
+            const headers = parseCSVLine(lines[0]);
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+                if (row.Name || row.name) data.push(row);
+            }
+            
+            return data;
+        }
+        
+        function parseCSVLine(line) {
+            const values = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (const char of line) {
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    values.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            values.push(current.trim());
+            return values;
         }
         
         function updateLeadCount() {

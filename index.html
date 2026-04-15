@@ -10,7 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- External CSS -->
     <link rel="stylesheet" href="styles.css">
-    <script src="auth.js"></script>
 </head>
 <body class="dark-mode">
     <!-- ================= HEADER ================= -->
@@ -99,14 +98,14 @@
                     </div>
                     
                     <!-- Lis Pendens -->
-                    <div class="metric-card warning" data-metric="lis">
+                    <a href="lis-pendens.html" class="metric-card warning" id="lisPendensMetric" style="text-decoration: none;">
                         <div class="metric-icon">📋</div>
                         <div class="metric-info">
-                            <div class="metric-label">Lis Pendens (MTD)</div>
-                            <div class="metric-value" id="lisPendens">--</div>
-                            <div class="metric-trend up">+8 new today</div>
+                            <div class="metric-label">Lis Pendens</div>
+                            <div class="metric-value" id="lisPendensLeadsCount">--</div>
+                            <div class="metric-trend">View Graded Leads →</div>
                         </div>
-                    </div>
+                    </a>
                     
                     <!-- Team Tasks -->
                     <div class="metric-card purple" data-metric="tasks">
@@ -351,12 +350,15 @@
     <!-- External JavaScript -->
     <script src="app.js"></script>
     <script>
-        // Load from local JSON file (like listings.html approach)
+        const BUYER_LEADS_CSV_URL = 'https://docs.google.com/spreadsheets/d/1d_UzZrIs4oO5Z3Nshc_UO4Fcorbimmm6rKovIyybdcg/gviz/tq?tqx=out:csv&sheet=Buyer%20Leads';
+        
         async function loadBuyerLeadsCount() {
             try {
-                const response = await fetch('buyer-leads.json');
-                const data = await response.json();
-                const count = data.leads ? data.leads.length : 0;
+                const response = await fetch(BUYER_LEADS_CSV_URL, { headers: { 'Accept': 'text/csv' } });
+                const csv = await response.text();
+                const lines = csv.trim().split('\n');
+                // Count rows minus header
+                const count = lines.length > 1 ? lines.length - 1 : 0;
                 
                 // Update the buyer leads count display
                 document.getElementById('buyerLeadsCount').textContent = count;
@@ -374,6 +376,51 @@
         loadBuyerLeadsCount();
         // Refresh every 5 minutes
         setInterval(loadBuyerLeadsCount, 5 * 60 * 1000);
+    </script>
+    <!-- Data Connector for stable counts -->
+    <script src="data-connector.js"></script>
+    <script>
+        // Update all metric counts using the unified data connector
+        async function updateMetricCounts() {
+            try {
+                const counts = await DataConnector.getCounts();
+                
+                // Update Listings count
+                const listingsEl = document.getElementById('activeListings');
+                if (listingsEl) {
+                    listingsEl.textContent = counts.listingCount;
+                }
+                
+                // Update Buyer Leads count
+                const buyerEl = document.getElementById('buyerLeadsCount');
+                if (buyerEl) {
+                    buyerEl.textContent = counts.buyerLeadsCount;
+                }
+                
+                // Update Lis Pendens count (using graded count)
+                const lisEl = document.getElementById('lisPendens');
+                if (lisEl) {
+                    lisEl.textContent = counts.lisPendensGradedCount;
+                }
+                
+                // Store for other pages
+                try {
+                    localStorage.setItem('listingCount', counts.listingCount);
+                    localStorage.setItem('buyerLeadsCount', counts.buyerLeadsCount);
+                    localStorage.setItem('lisPendensCount', counts.lisPendensGradedCount);
+                    localStorage.setItem('metricsLastUpdated', new Date().toISOString());
+                } catch(e) {}
+                
+                console.log('Metrics updated:', counts);
+            } catch (e) {
+                console.error('Error updating metrics:', e);
+            }
+        }
+        
+        // Load counts on page load
+        updateMetricCounts();
+        // Refresh every 2 minutes (matching cache TTL)
+        setInterval(updateMetricCounts, 2 * 60 * 1000);
     </script>
 </body>
 </html>
