@@ -36,6 +36,11 @@
                 <span class="clock-date">--</span>
                 <span class="clock-time">--:--:--</span>
             </div>
+            <!-- Weather Widget -->
+            <div class="weather-widget-header" id="headerWeather">
+                <span class="weather-temp" id="headerTemp">--°</span>
+                <span class="weather-location">Destin, FL</span>
+            </div>
             <button class="theme-toggle" id="themeToggle" title="Toggle Dark/Light Mode">
                 <span class="theme-icon">☀️</span>
             </button>
@@ -94,16 +99,6 @@
                             <div class="metric-label">Pipeline Value</div>
                             <div class="metric-value" id="pipelineValue">$--</div>
                             <div class="metric-trend up">+12% vs last month</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Weather -->
-                    <div class="metric-card weather" data-metric="weather">
-                        <div class="metric-icon" id="weatherIcon">🌡️</div>
-                        <div class="metric-info">
-                            <div class="metric-label">Destin, FL</div>
-                            <div class="metric-value" id="temperature">--°</div>
-                            <div class="metric-trend" id="weatherDesc">Loading...</div>
                         </div>
                     </div>
                 </div>
@@ -420,10 +415,9 @@
                 const description = weatherMap[weatherCode] || 'Partly cloudy';
                 
                 // Update DOM
-                document.getElementById('temperature').textContent = temp + '°F';
-                document.getElementById('weatherDesc').textContent = description;
+                document.getElementById('headerTemp').textContent = temp + '°';
                 
-                console.log('Weather updated:', temp + '°F', description);
+                console.log('Weather updated:', temp + '°F');
             } catch (e) {
                 console.error('Weather fetch failed:', e);
                 document.getElementById('weatherDesc').textContent = 'Weather unavailable';
