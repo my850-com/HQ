@@ -362,8 +362,12 @@
         function renderPropertyList(listings) {
             const container = document.getElementById('propertyList');
             
+            // Store for URL lookup
+            window.sellerUpdateListings = listings;
+            
             container.innerHTML = listings.map((l, index) => {
                 const address = l['Address'] || 'Property';
+                const mlsNumber = l['MLS Number'] || l['MLS#'] || l['mlsNumber'] || index;
                 const price = parseFloat(l['List Price']) || 0;
                 const city = l['City'] || '';
                 const dom = l['Days on Market'] || '--';
@@ -373,7 +377,7 @@
                 const updateText = generateUpdateText(l, sellerName, address, price, dom);
                 
                 return `
-                    <div class="property-card" data-index="${index}">
+                    <div class="property-card" data-index="${index}" data-mls="${l['MLS Number'] || l['MLS#'] || l['mlsNumber'] || index}">
                         <div class="property-header" onclick="toggleProperty(${index})">
                             <div class="property-info">
                                 <h3>${address}</h3>
@@ -570,8 +574,37 @@ Property link: [${currentListingLink}]`;
             return text.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
         }
         
+        // Store for URL lookup
+        window.sellerUpdateListings = [];
+        
+        // Check URL for MLS parameter and auto-highlight
+        function checkUrlForMls() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const mlsToFind = urlParams.get('mls');
+            
+            if (mlsToFind && window.sellerUpdateListings.length > 0) {
+                setTimeout(() => {
+                    const cards = document.querySelectorAll('.property-card[data-mls]');
+                    cards.forEach(card => {
+                        if (card.dataset.mls === mlsToFind) {
+                            // Highlight and scroll to this card
+                            const radio = card.querySelector('input[type="radio"]');
+                            if (radio) {
+                                radio.checked = true;
+                            }
+                            card.classList.add('selected');
+                            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    });
+                }, 500);
+            }
+        }
+        
         // Load on startup
-        document.addEventListener('DOMContentLoaded', loadProperties);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProperties();
+            checkUrlForMls();
+        });
     </script>
 </body>
 </html>
