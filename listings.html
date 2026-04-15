@@ -243,115 +243,13 @@
         </section>
     </main>
 
-    <!-- Data Connector -->
-    <script src="data-connector.js"></script>
-    
     <script>
-        // Google Sheets Listings tab CSV URL
-        const LISTINGS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1d_UzZrIs4oO5Z3Nshc_UO4Fcorbimmm6rKovIyybdcg/gviz/tq?tqx=out:csv&sheet=Listings';
-        
-        // Parse CSV line (handles quoted values)
-        function parseCSVLine(line) {
-            const values = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (const char of line) {
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    values.push(current.trim());
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            values.push(current.trim());
-            return values;
-        }
-        
-        // Parse CSV text into objects
-        function parseCSV(csvText) {
-            const lines = csvText.trim().split('\n');
-            if (lines.length < 2) return [];
-            
-            const headers = parseCSVLine(lines[0]);
-            const rows = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                const values = parseCSVLine(lines[i]);
-                const row = {};
-                headers.forEach((header, index) => {
-                    row[header] = values[index] || '';
-                });
-                rows.push(row);
-            }
-            
-            return rows;
-        }
-        
-        // Fetch listings data from Google Sheets
+        // Fetch listings data
         async function loadListings() {
             try {
-                let rows;
-                
-                // Try DataConnector first, fallback to direct fetch
-                if (typeof DataConnector !== 'undefined') {
-                    rows = await DataConnector.getData('listings');
-                } else {
-                    const response = await fetch(LISTINGS_SHEET_URL, { headers: { 'Accept': 'text/csv' } });
-                    if (!response.ok) throw new Error('HTTP ' + response.status);
-                    const csv = await response.text();
-                    rows = parseCSV(csv);
-                }
-                
-                // Map to listing objects and filter for Active (Status = 'A')
-                const listings = rows.map(row => {
-                    // Based on actual MLS export columns
-                    const price = parseFloat(row['Current Price'] || row['List Price'] || row['Price'] || 0);
-                    
-                    // Build full address from components
-                    const streetNum = row['Street #'] || '';
-                    const streetDir = row['Street Direction'] || '';
-                    const streetName = row['Street Name'] || '';
-                    const streetSuffix = row['Street Suffix'] || '';
-                    const unit = row['Unit #'] || '';
-                    const fullAddress = [streetNum, streetDir, streetName, streetSuffix, unit].filter(Boolean).join(' ');
-                    
-                    return {
-                        mlsNumber: row['List Number'] || row['MLS Number'] || row['MLSNumber'] || '',
-                        address: fullAddress || row['Address'] || '',
-                        city: row['City'] || '',
-                        state: row['State'] || 'FL',
-                        zip: row['Zip Code'] || '',
-                        listPrice: price,
-                        sellerName: row['Sellers Name'] || row['Seller Name'] || row['Seller'] || '',
-                        daysOnMarket: parseInt(row['Days on Market'] || 0),
-                        propertyType: row['Property Type'] || row['Sub-Type'] || 'Unknown',
-                        bedrooms: parseInt(row['Bedrooms'] || 0),
-                        bathrooms: row['Total Baths'] || row['Full Baths'] || '',
-                        sqft: parseInt(row['Apx SqFt(Htd/Cooled)'] || 0),
-                        yearBuilt: parseInt(row['Year Built'] || 0),
-                        listingDate: row['List Date'] || '',
-                        expirationDate: row['End Date'] || '',
-                        photoUrl: row['Photo URL'] || '',
-                        showingNotes: row['Resent Agent Feedback'] || '',
-                        status: row['Status'] || 'A',
-                        // Additional data for seller updates
-                        zillowViews: row['Zillow Views'] || '',
-                        zillowSaves: row['Zillow Saves'] || '',
-                        zillowTotalSaves: row['Zillow Total Saves'] || '',
-                        homesViews: row['Homes Views Current'] || '',
-                        homesViewsLast: row['Homes Views Last'] || '',
-                        showingsSinceLast: row['Showings Since Last'] || '',
-                        totalShowings: row['Total Showings'] || '',
-                        totalInquiries: row['Listing Inquiries'] || '',
-                        additionalInfo: row['Additional Info'] || '',
-                        listingsInArea: row['Number of Listings in area'] || '',
-                        pendingUnits: row['# of Pending Units'] || '',
-                        priceReductions: row['# of Price Reductions'] || ''
-                    };
-                }).filter(l => l.status.toUpperCase() === 'A'); // Active only: A = Active
+                const response = await fetch('../team-listings.json');
+                const data = await response.json();
+                const listings = data.listings.filter(l => l.status === 'Active');
                 
                 // Store for seller update generation
                 listingsData = listings;
@@ -368,7 +266,7 @@
             } catch (error) {
                 console.error('Error loading listings:', error);
                 document.getElementById('listingsContainer').innerHTML = 
-                    '<p style="text-align: center; color: #ef4444;">Error loading listings: ' + error.message + '</p>';
+                    '<p style="text-align: center; color: #ef4444;">Error loading listings. Please refresh.</p>';
             }
         }
 
@@ -503,54 +401,34 @@
             const sellerFirstName = listing.sellerName ? listing.sellerName.split(' ')[0] : 'there';
             const priceFormatted = (listing.listPrice / 1000).toFixed(0) + 'K';
             
-            // Build the seller update with actual data from Google Sheet
-            const zillowViews = listing.zillowViews || '0';
-            const zillowSaves = listing.zillowSaves || '0';
-            const zillowTotalSaves = listing.zillowTotalSaves || '0';
-            const homesViews = listing.homesViews || '0';
-            const homesViewsLast = listing.homesViewsLast || '0';
-            const homesChange = parseInt(homesViews) - parseInt(homesViewsLast);
-            const showingsSince = listing.showingsSinceLast || '0';
-            const totalShowings = listing.totalShowings || '0';
-            const totalInquiries = listing.totalInquiries || '0';
-            const listingsInArea = listing.listingsInArea || '0';
-            const pendingUnits = listing.pendingUnits || '0';
-            const priceReductions = listing.priceReductions || '0';
-            const agentFeedback = listing.showingNotes || listing.additionalInfo || 'No recent feedback';
-            
-            const updateTemplate = `Hi ${sellerFirstName},
+            // Build the seller update with merge fields preserved
+            const updateTemplate = `Hi ${sellerFirstName}, Here is a quick update you.
+${listing.address}
 
-Here is your weekly update on ${listing.address}:
-
-📊 THE NUMBERS
-• Listed Price: $${priceFormatted}
+THE NUMBERS
+• Price: $${priceFormatted}
 • Days on Market: ${listing.daysOnMarket || 0}
 
-💻 ONLINE ACTIVITY
+ONLINE ACTIVITY
 ZILLOW:
-• ${zillowViews} views
-• ${zillowSaves} saves (Total: ${zillowTotalSaves})
+• 316 views, 6 saves, |Zillow Total Saves| total saves, |Save Ratio| save ratio, |Last Save Ratio| last save ratio
 
 HOMES:
-• ${homesViews} current views
-• ${homesViewsLast} last period views
-• Change: ${homesChange > 0 ? '+' : ''}${homesChange}
+• |Homes Views Current| views since last update for a change of |Homes Change| which is |Which Is|
 
-👥 BUYER INTEREST
-• Showings since last update: ${showingsSince}
-• Total showings: ${totalShowings}
-• Inquiries: ${totalInquiries}
+BUYER INTEREST:
+• Showings: 3 since last update, |Total Showings| total showings
+• Inquiries: 38 Total
 
-💬 AGENT FEEDBACK
-${agentFeedback}
+FEEDBACK:
+|Additional Info|
 
-🏘️ NEIGHBORHOOD SUMMARY
-• Active listings in area: ${listingsInArea}
-• Pending sales: ${pendingUnits}
-• Recent price reductions: ${priceReductions}
-
-Questions? Reply anytime.
-- Your MY850 Team`;
+Neighborhood Summary: 
+Listings available: *|Number of Listings in Area|* 
+Change from last update:*|Listing Count Change|*
+Listings under contract: *|# of Pending Units|* 
+Price reductions: *|# of Price Reductions|* 
+Property link: [*|Current Listing in Area|*]`;
 
             // Copy to clipboard
             navigator.clipboard.writeText(updateTemplate).then(() => {
