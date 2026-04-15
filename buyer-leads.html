@@ -153,6 +153,45 @@
         .sort-active .sort-icon {
             opacity: 1;
         }
+        .telegram-banner {
+            background: linear-gradient(135deg, #2E5090 0%, #1a3a5c 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .telegram-banner p {
+            margin: 0;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        .telegram-banner a {
+            color: #4a9eff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .telegram-banner a:hover {
+            color: #6fb3ff;
+        }
+        .telegram-btn {
+            background: linear-gradient(135deg, #4a9eff 0%, #2E5090 100%);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .telegram-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 158, 255, 0.4);
+        }
     </style>
 </head>
 <body class="dark-mode">
@@ -179,6 +218,12 @@
                 <h1>Buyer Leads</h1>
                 <p id="leadCount">Loading...</p>
             </div>
+        </div>
+
+        <!-- Telegram Communication Banner -->
+        <div class="telegram-banner">
+            <p>💬 <strong>Sherlock HQ Team Chat</strong> — To update a lead or obtain more information, connect with the team on Telegram</p>
+            <a href="https://t.me/+CAifiPnXMc40OWVh" target="_blank" class="telegram-btn">Open Sherlock HQ ↗</a>
         </div>
 
         <!-- Filters -->
