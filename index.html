@@ -77,26 +77,6 @@
                         </div>
                     </a>
                     
-                    <!-- Pipeline Value -->
-                    <div class="metric-card success" data-metric="pipeline">
-                        <div class="metric-icon">💰</div>
-                        <div class="metric-info">
-                            <div class="metric-label">Pipeline Value</div>
-                            <div class="metric-value" id="pipelineValue">$--</div>
-                            <div class="metric-trend up">+12% vs last month</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Hot Leads -->
-                    <div class="metric-card danger" data-metric="hotleads">
-                        <div class="metric-icon">🔥</div>
-                        <div class="metric-info">
-                            <div class="metric-label">Hot Leads Today</div>
-                            <div class="metric-value" id="hotLeads">--</div>
-                            <div class="metric-trend hot">Requires action</div>
-                        </div>
-                    </div>
-                    
                     <!-- Lis Pendens -->
                     <a href="lis-pendens.html" class="metric-card warning" id="lisPendensMetric" style="text-decoration: none;">
                         <div class="metric-icon">📋</div>
@@ -107,23 +87,23 @@
                         </div>
                     </a>
                     
-                    <!-- Team Tasks -->
-                    <div class="metric-card purple" data-metric="tasks">
-                        <div class="metric-icon">✅</div>
+                    <!-- Pipeline Value -->
+                    <div class="metric-card success" data-metric="pipeline">
+                        <div class="metric-icon">💰</div>
                         <div class="metric-info">
-                            <div class="metric-label">Team Tasks</div>
-                            <div class="metric-value" id="teamTasks">--</div>
-                            <div class="metric-trend">-- pending</div>
+                            <div class="metric-label">Pipeline Value</div>
+                            <div class="metric-value" id="pipelineValue">$--</div>
+                            <div class="metric-trend up">+12% vs last month</div>
                         </div>
                     </div>
                     
-                    <!-- Synthflow Calls -->
-                    <div class="metric-card teal" data-metric="calls">
-                        <div class="metric-icon">📞</div>
+                    <!-- Weather -->
+                    <div class="metric-card weather" data-metric="weather">
+                        <div class="metric-icon" id="weatherIcon">🌡️</div>
                         <div class="metric-info">
-                            <div class="metric-label">Calls Today</div>
-                            <div class="metric-value" id="synthflowCalls">--</div>
-                            <div class="metric-trend">-- answered</div>
+                            <div class="metric-label">Destin, FL</div>
+                            <div class="metric-value" id="temperature">--°</div>
+                            <div class="metric-trend" id="weatherDesc">Loading...</div>
                         </div>
                     </div>
                 </div>
@@ -417,10 +397,46 @@
             }
         }
         
-        // Load counts on page load
+        // Fetch weather for Destin, FL
+        async function fetchWeather() {
+            try {
+                // Using Open-Meteo free API (no key required)
+                const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=30.3935&longitude=-86.4958&current=temperature_2m,weather_code&temperature_unit=fahrenheit');
+                const data = await response.json();
+                
+                const temp = Math.round(data.current.temperature_2m);
+                const weatherCode = data.current.weather_code;
+                
+                // Map weather codes to descriptions
+                const weatherMap = {
+                    0: 'Clear', 1: 'Clear', 2: 'Partly cloudy', 3: 'Overcast',
+                    45: 'Fog', 48: 'Fog',
+                    51: 'Drizzle', 53: 'Drizzle', 55: 'Drizzle',
+                    61: 'Rain', 63: 'Rain', 65: 'Rain',
+                    80: 'Showers', 81: 'Showers', 82: 'Showers',
+                    95: 'Thunderstorm', 96: 'Thunderstorm', 99: 'Thunderstorm'
+                };
+                
+                const description = weatherMap[weatherCode] || 'Partly cloudy';
+                
+                // Update DOM
+                document.getElementById('temperature').textContent = temp + '°F';
+                document.getElementById('weatherDesc').textContent = description;
+                
+                console.log('Weather updated:', temp + '°F', description);
+            } catch (e) {
+                console.error('Weather fetch failed:', e);
+                document.getElementById('weatherDesc').textContent = 'Weather unavailable';
+            }
+        }
+        
+        // Load counts and weather
         updateMetricCounts();
-        // Refresh every 2 minutes (matching cache TTL)
+        fetchWeather();
+        
+        // Refresh metrics every 2 minutes, weather every 10 minutes
         setInterval(updateMetricCounts, 2 * 60 * 1000);
+        setInterval(fetchWeather, 10 * 60 * 1000);
     </script>
 </body>
 </html>
