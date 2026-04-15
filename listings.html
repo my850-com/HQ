@@ -6,7 +6,6 @@
     <title>Active Listings | MY850 HQ</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
-    <script src="auth.js"></script>
     <style>
         .listings-header {
             display: flex;
@@ -244,13 +243,94 @@
         </section>
     </main>
 
+    <!-- Data Connector -->
+    <script src="data-connector.js"></script>
+    
     <script>
-        // Fetch listings data
+        // Google Sheets Listings tab CSV URL
+        const LISTINGS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1d_UzZrIs4oO5Z3Nshc_UO4Fcorbimmm6rKovIyybdcg/gviz/tq?tqx=out:csv&sheet=Listings';
+        
+        // Parse CSV line (handles quoted values)
+        function parseCSVLine(line) {
+            const values = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (const char of line) {
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    values.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            values.push(current.trim());
+            return values;
+        }
+        
+        // Parse CSV text into objects
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            if (lines.length < 2) return [];
+            
+            const headers = parseCSVLine(lines[0]);
+            const rows = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+                rows.push(row);
+            }
+            
+            return rows;
+        }
+        
+        // Fetch listings data from Google Sheets
         async function loadListings() {
             try {
-                const response = await fetch('../team-listings.json');
-                const data = await response.json();
-                const listings = data.listings.filter(l => l.status === 'Active');
+                let rows;
+                
+                // Try DataConnector first, fallback to direct fetch
+                if (typeof DataConnector !== 'undefined') {
+                    rows = await DataConnector.getData('listings');
+                } else {
+                    const response = await fetch(LISTINGS_SHEET_URL, { headers: { 'Accept': 'text/csv' } });
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    const csv = await response.text();
+                    rows = parseCSV(csv);
+                }
+                
+                // Map to listing objects and filter for Active (Status = 'A')
+                const listings = rows.map(row => {
+                    // Detect price column (various naming conventions)
+                    const price = parseFloat(row['Asking Price'] || row['List Price'] || row['Price'] || row['Amount'] || 0);
+                    
+                    return {
+                        mlsNumber: row['MLSNumber'] || row['MLS Number'] || row['MLS'] || '',
+                        address: row['Address'] || row['Property Address'] || row['Street'] || '',
+                        city: row['City'] || row['Property City'] || '',
+                        state: row['State'] || row['Property State'] || 'FL',
+                        zip: row['Zip'] || row['Zip Code'] || row['Property Zip'] || '',
+                        listPrice: price,
+                        sellerName: row['Seller Name'] || row['Owner'] || row['Seller'] || '',
+                        daysOnMarket: parseInt(row['Days on Market'] || row['DOM'] || 0),
+                        propertyType: row['Property Type'] || row['Type'] || 'Unknown',
+                        bedrooms: parseInt(row['Bedrooms'] || row['Beds'] || 0),
+                        bathrooms: row['Bathrooms'] || row['Baths'] || '',
+                        sqft: parseInt(row['Sqft'] || row['Square Feet'] || row['SQFT'] || 0),
+                        yearBuilt: parseInt(row['Year Built'] || row['Year'] || 0),
+                        listingDate: row['List Date'] || row['Listing Date'] || '',
+                        expirationDate: row['Expiration Date'] || '',
+                        photoUrl: row['Photo URL'] || row['Photo'] || row['Photos'] || '',
+                        showingNotes: row['Showing Notes'] || row['Notes'] || '',
+                        status: row['Status'] || 'A'
+                    };
+                }).filter(l => l.status.toUpperCase() === 'A'); // Active only: A = Active
                 
                 // Store for seller update generation
                 listingsData = listings;
@@ -267,7 +347,7 @@
             } catch (error) {
                 console.error('Error loading listings:', error);
                 document.getElementById('listingsContainer').innerHTML = 
-                    '<p style="text-align: center; color: #ef4444;">Error loading listings. Please refresh.</p>';
+                    '<p style="text-align: center; color: #ef4444;">Error loading listings: ' + error.message + '</p>';
             }
         }
 
