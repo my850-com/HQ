@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "name": "Buyer Leads",
+    "description": "Active buyer leads from all sources",
+    "lastUpdated": "2026-04-14T21:30:00-05:00",
+    "totalLeads": 0,
+    "version": "1.0"
+  },
+  "schema": {
+    "lead": {
+      "fields": [
+        "name",
+        "email",
+        "phone",
+        "location",
+        "priority",
+        "budget",
+        "propertyType",
+        "timeFrame",
+        "source",
+        "dateCreated",
+        "lastContact",
+        "notes"
+      ]
+    }
+  },
+  "leads": []
+}

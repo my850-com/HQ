@@ -244,9 +244,8 @@
     </main>
 
     <script>
-        // Google Sheet CSV URL for Buyer Leads tab
-        // Google Sheet CSV URL for Buyer Leads tab (published)
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRdI2q5qlHpihVdEm7ev8GHjCqWQQ7NTX0C2MnNRYWkd2eAweBjdPRA2zEG-4xq5dJ4FdvqhgOCkuXU/pub?gid=97439156&single=true&output=csv';
+        // Load from local JSON (same pattern as listings.html)
+        // To update: replace buyer-leads.json with exported data from Google Sheets
         
         let allLeads = [];
         let currentLeads = [];
@@ -258,20 +257,33 @@
             const tbody = document.getElementById('buyerTableBody');
             
             try {
-                // Fetch with explicit headers (same as listings.html)
-                const response = await fetch(SHEET_CSV_URL, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'text/csv,text/plain,*/*'
-                    }
-                });
+                // Fetch local JSON file
+                const response = await fetch('buyer-leads.json');
                 
                 if (!response.ok) throw new Error('HTTP ' + response.status);
                 
-                const csv = await response.text();
-                if (!csv || csv.trim().length === 0) throw new Error('Empty CSV');
+                const data = await response.json();
                 
-                allLeads = parseCSV(csv);
+                // Convert JSON format to match expected structure
+                if (data.leads && Array.isArray(data.leads)) {
+                    allLeads = data.leads.map(lead => ({
+                        Name: lead.name || '',
+                        Email: lead.email || '',
+                        Phone: lead.phone || '',
+                        Location: lead.location || '',
+                        Priority: lead.priority || 'Cold',
+                        'Budget/Price': lead.budget || '',
+                        'Property Type': lead.propertyType || '',
+                        'Time Frame': lead.timeFrame || lead.timeframe || '',
+                        Source: lead.source || '',
+                        'Date Created': lead.dateCreated || '',
+                        'Last Contact': lead.lastContact || '',
+                        Notes: lead.notes || ''
+                    }));
+                } else {
+                    allLeads = [];
+                }
+                
                 currentLeads = [...allLeads];
                 
                 // Update count
@@ -290,46 +302,8 @@
                 
             } catch (error) {
                 console.error('Error loading leads:', error);
-                tbody.innerHTML = '<tr><td colspan="9" class="error-message"><p>❌ Failed to load buyer leads</p><p style="font-size:0.8rem;margin-top:10px;">' + error.message + '</p><button onclick="loadBuyerLeads()">Retry</button></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="loading-cell"><p>No buyer leads data available.</p><p style="font-size:0.8rem;color:var(--text-muted);margin-top:10px;">To add data, export your Buyer Leads sheet as JSON and replace buyer-leads.json</p></td></tr>';
             }
-        }
-        
-        function parseCSV(csvText) {
-            const lines = csvText.trim().split('\n');
-            if (lines.length < 2) return [];
-            
-            const headers = parseCSVLine(lines[0]);
-            const data = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                const values = parseCSVLine(lines[i]);
-                const row = {};
-                headers.forEach((header, index) => {
-                    row[header] = values[index] || '';
-                });
-                if (row.Name || row.name) data.push(row);
-            }
-            
-            return data;
-        }
-        
-        function parseCSVLine(line) {
-            const values = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (const char of line) {
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    values.push(current.trim());
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            values.push(current.trim());
-            return values;
         }
         
         function updateLeadCount() {
