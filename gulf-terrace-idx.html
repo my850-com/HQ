@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gulf Terrace Condominiums | Destin FL | MY850 Real Estate</title>
+    <meta name="description" content="Gulf Terrace Condominiums in Destin FL - Resort style amenities, 3 pools, tennis. View available units and contact MY850 Real Estate Team.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2E5090;
+            --accent: #20C997;
+            --dark: #0f0f1a;
+            --light: #ffffff;
+            --gray: #6c6c8a;
+            --success: #28a745;
+            --danger: #dc3545;
+            --gold: #fbbf24;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f0f1a;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        .logo-text h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: var(--gray);
+            margin: 0;
+        }
+
+        .back-link {
+            color: #64b5f6;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, rgba(46, 80, 144, 0.9), rgba(32, 201, 151, 0.8)),
+                        url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 2rem;
+        }
+
+        /* Property Badge */
+        .property-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0,0,0,0.3);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Main Content */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* IDX Widget Section */
+        .idx-section {
+            background: #1a1a2e;
+            border: 2px solid var(--primary);
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 2rem 0;
+            box-shadow: 0 8px 32px rgba(46, 80, 144, 0.2);
+        }
+
+        .idx-header {
+            background: linear-gradient(135deg, var(--primary), #1e3a5f);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .idx-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .idx-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .idx-widget-container {
+            height: 500px;
+            background: #f0f0f0;
+            position: relative;
+        }
+
+        .idx-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #333;
+        }
+
+        .idx-loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(46, 80, 144, 0.3);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Property Highlights */
+        .highlights {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+
+        .highlight-card {
+            background: #1a1a2e;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .highlight-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .highlight-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .highlight-card h4 {
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .highlight-card p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2E5090 100%);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin: 3rem 0;
+            text-align: center;
+        }
+
+        .contact-section h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .contact-section p {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 1.5rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: transform 0.2s;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #0f0f1a;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid white;
+            color: white;
+        }
+
+        .footer-note {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            margin-top: 1.5rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h2 {
+                font-size: 1.8rem;
+            }
+            
+            .idx-widget-container {
+                height: 400px;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .btn-primary, .btn-secondary {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-icon">🦞</span>
+            <div class="logo-text">
+                <h1>MY850 Real Estate</h1>
+                <p>Sherlock on the Case</p>
+            </div>
+        </div>
+        <a href="https://search.my850.com" class="back-link">← Full Search</a>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="property-badge">
+                📍 Destin, FL 32541
+            </div>
+            <h2>Gulf Terrace Condominiums</h2>
+            <p>Resort-style living with 3 pools, tennis courts, and lake views. Vacation rental approved. Resort-style amenities.</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-container">
+
+        <!-- IDX Widget Section -->
+        <section class="idx-section">
+            <div class="idx-header">
+                <h3>🏠 Available Gulf Terrace Units</h3>
+                <div class="idx-status">
+                    <span class="status-dot"></span>
+                    <span>Live Listings</span>
+                </div>
+            </div>
+            <div class="idx-widget-container">
+                <div id="idxwidgetsrc-22772" style="width: 100%; height: 100%;">
+                    <div class="idx-loading">
+                        <div class="idx-loading-spinner"></div>
+                        <p>Loading Gulf Terrace listings...</p>
+                    </div>
+                    <!-- IDX Widget Script -->
+                    <script charset="UTF-8" type="text/javascript" id="idxwidgetsrc-22772" 
+                        src="//search.my850.com/idx/mapwidgetjs.php?widgetid=22772">
+                    </script>
+                </div>
+            </div>
+        </section>
+
+        <!-- Property Highlights -->
+        <section class="highlights">
+            <div class="highlight-card">
+                <div class="highlight-icon">🏊</div>
+                <h4>3 Resort Pools</h4>
+                <p>Multiple pools including lake/greenbelt view areas</p>
+            </div>
+            <div class="highlight-card">
+                <div class="highlight-icon">🎾</div>
+                <h4>Tennis Courts</h4>
+                <p>On-site tennis facilities for residents</p>
+            </div>
+            <div class="highlight-card">
+                <div class="highlight-icon">🏖️</div>
+                <h4>Vacation Rental</h4>
+                <p>Rental-ready units - investor friendly</p>
+            </div>
+            <div class="highlight-card">
+                <div class="highlight-icon">🌅</div>
+                <h4>Lake Views</h4>
+                <p>Scenic lake and green belt views</p>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="contact-section">
+            <h3>Interested in Gulf Terrace?</h3>
+            <p>Get exclusive access to new listings, price changes, and off-market opportunities at Gulf Terrace Condominiums.</p>
+            
+            <div class="cta-buttons">
+                <a href="tel:+18501234567" class="cta-btn btn-primary">
+                    📞 Call Team
+                </a>
+                <a href="mailto:info@my850.com?subject=Gulf%20Terrace%20Inquiry" class="cta-btn btn-secondary">
+                    ✉️ Email Inquiry
+                </a>
+            </div>
+
+            <div class="footer-note">
+                <strong>MY850 Real Estate Team</strong><br>
+                Lars Rygaard, REALTOR®<br>
+                <a href="https://search.my850.com" style="color: #64b5f6;">search.my850.com</a>
+            </div>
+        </section>
+
+    </main>
+
+</body>
+</html>
