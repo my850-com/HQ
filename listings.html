@@ -203,17 +203,19 @@
     <header class="header">
         <div class="header-left">
             <div class="logo">
-                <img src="sherlock-avatar.png" alt="MY850 HQ" class="logo-img" style="width: 40px; height: 40px; border-radius: 8px;">
+                <span class="logo-icon">🦞</span>
                 <div class="logo-text">
                     <h1>MY850 HQ</h1>
-                    <span class="logo-tagline">Active Listings</span>
+                    <span class="logo-tagline">Command Center</span>
                 </div>
             </div>
+        </div>
+        <div class="header-right">
+            <a href="index.html" class="back-link">← Back to Dashboard</a>
         </div>
     </header>
 
     <main class="main-container">
-        <a href="index.html" class="back-link">← Back to Mission Control</a>
 
         <div class="listings-header">
             <h2>🏠 Active Listings Dashboard</h2>
@@ -247,7 +249,7 @@
         // Fetch listings data
         async function loadListings() {
             try {
-                const response = await fetch('../team-listings.json');
+                const response = await fetch('team-listings.json');
                 const data = await response.json();
                 const listings = data.listings.filter(l => l.status === 'Active');
                 
