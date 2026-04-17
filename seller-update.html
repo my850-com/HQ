@@ -421,7 +421,12 @@
             const whichIs = listing['Which Is'] || '[Which Is]';
             const totalShowings = listing['Total Showings'] || listing['Showings Total'] || '[Total Showings]';
             const additionalInfo = listing['Additional Info'] || listing['Resent Agent Feedback'] || listing['Agent Feedback'] || '[Additional Info]';
-            const listingsInArea = listing['Number of Listings in Area'] || listing['Listings in Area'] || '[Number of Listings in Area]';
+            // Column Z: Number of Listings in Area - show actual number or 0 if empty
+            const listingsInArea = (listing['Number of Listings in Area'] && listing['Number of Listings in Area'].trim() !== '') 
+                ? listing['Number of Listings in Area'] 
+                : (listing['Listings in Area'] && listing['Listings in Area'].trim() !== '')
+                    ? listing['Listings in Area']
+                    : '0';
             const listingCountChange = listing['Listing Count Change'] || '[Listing Count Change]';
             const pendingUnits = listing['# of Pending Units'] || listing['Pending Units'] || '[# of Pending Units]';
             const priceReductions = listing['# of Price Reductions'] || listing['Price Reductions'] || '[# of Price Reductions]';
