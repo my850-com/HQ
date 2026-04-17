@@ -328,7 +328,8 @@
             `;
             
             try {
-                const response = await fetch(SHEET_CSV_URL, {
+                const cacheBuster = SHEET_CSV_URL + '&cb=' + Date.now();
+                const response = await fetch(cacheBuster, {
                     headers: { 'Accept': 'text/csv' }
                 });
                 
