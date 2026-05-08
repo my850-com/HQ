@@ -94,13 +94,23 @@
             position: relative; z-index: 10;
         }
         
-        /* Mobile Responsive */
+        /* Tablet */
+        @media (max-width: 1100px) {
+            .control-center {
+                grid-template-columns: 200px 1fr 240px;
+            }
+        }
+        /* Mobile */
         @media (max-width: 768px) {
-            header { padding: 12px 16px; }
+            header { padding: 12px 16px; flex-wrap: wrap; }
             h1 { font-size: 14px; }
-            .connection-status { font-size: 10px; padding: 4px 8px; }
+            .brand { gap: 8px; }
+            .brand-icon { width: 36px; height: 36px; font-size: 18px; }
+            .connection-status { font-size: 10px; padding: 4px 8px; margin-top: 8px; width: 100%; justify-content: center; }
             .control-center {
                 grid-template-columns: 1fr;
+                height: auto;
+                min-height: calc(100vh - 100px);
                 padding: 12px;
                 gap: 12px;
             }
@@ -111,7 +121,10 @@
             .pipeline-container { max-height: none; }
             .flow-node { padding: 12px; }
             .agent-header { margin-bottom: 8px; }
-            canvas { max-height: 150px !important; }
+            .agent-avatar { width: 40px; height: 40px; font-size: 18px; }
+            .task-box { padding: 8px; }
+            canvas { max-height: 200px !important; }
+            .log-container { height: auto; max-height: 250px; }
         }
         
         .panel { display: flex; flex-direction: column; gap: 12px; }
@@ -291,8 +304,9 @@
             
             <div class="card">
                 <div class="agent-header">
-                        h3>Lars</h3>
                     <div class="agent-avatar" style="background:linear-gradient(135deg,var(--orange),#fbbf24);">👤</div>
+                    <div class="agent-status">
+                        <h3>Lars</h3>
                         <span class="status-badge" style="background:rgba(249,115,22,0.1);color:var(--orange);">IDLE</span>
                     </div>
                 </div>
@@ -347,7 +361,7 @@
                 <canvas id="toolChart"></canvas>
             </div>
             <div class="card">
-                <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12:px;"">Context Usage</div>
+                <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Context Usage</div>
                 <div class="context-bar">
                     <div class="context-fill" id="contextBar" style="width:0%;"></div>
                 </div>
