@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office | Sherlock Mission Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --accent-cyan: #00f5d4;
+            --accent-orange: #ff6b35;
+            --accent-purple: #a855f7;
+            --accent-green: #22d3ee;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: rgba(255,255,255,0.08);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Grid Background */
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(0,245,212,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,245,212,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            animation: gridMove 20s linear infinite;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(180deg, rgba(18,18,26,0.95) 0%, transparent 100%);
+            backdrop-filter: blur(10px);
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(34,211,238,0.1);
+            border: 1px solid rgba(34,211,238,0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+        }
+        
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        
+        /* Main Grid */
+        .mission-control {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 24px;
+            padding: 24px;
+            max-width: 1800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Agent Status Cards */
+        .agent-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .agent-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .agent-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            animation: agentPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes agentPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0,245,212,0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(0,245,212,0); }
+        }
+        
+        .agent-status {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--accent-green);
+            background: rgba(34,211,238,0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+        
+        /* Live Pipeline Flow */
+        .pipeline-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            min-height: 600px;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-title::before {
+            content: '◉';
+            color: var(--accent-cyan);
+            animation: blink 1s ease-in-out infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        /* Flow Nodes */
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 20px;
+        }
+        
+        .flow-node {
+            background: linear-gradient(135deg, rgba(0,245,212,0.05), rgba(168,85,247,0.05));
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .flow-node.active {
+            border-color: var(--accent-cyan);
+            background: linear-gradient(135deg, rgba(0,245,212,0.1), rgba(168,85,247,0.1));
+            animation: nodeActive 2s ease-in-out infinite;
+        }
+        
+        @keyframes nodeActive {
+            0%, 100% { box-shadow: 0 0 20px rgba(0,245,212,0.2); }
+            50% { box-shadow: 0 0 40px rgba(0,245,212,0.4); }
+        }
+        
+        .flow-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background: rgba(0,245,212,0.1);
+        }
+        
+        .flow-icon.processing {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .flow-info h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .flow-info p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            border-radius: 0 0 12px 12px;
+            transition: width 0.3s ease;
+        }
+        
+        /* Real-time Metrics */
+        .metrics-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+        }
+        
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .metric-row:last-child { border-bottom: none; }
+        
+        .metric-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent-cyan);
+        }
+        
+        .metric-value.cost {
+            color: var(--accent-orange);
+        }
+        
+        /* Activity Log */
+        .activity-log {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 24px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            border-left: 2px solid var(--accent-cyan);
+            margin-bottom: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            background: rgba(0,245,212,0.03);
+        }
+        
+        .log-entry.executing { border-left-color: var(--accent-orange); }
+        .log-entry.complete { border-left-color: var(--accent-green); }
+        
+        .log-time {
+            color: var(--text-secondary);
+            min-width: 60px;
+        }
+        
+        /* Connection Lines */
+        .flow-connector {
+            position: relative;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .flow-connector::before {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--accent-cyan), var(--accent-purple));
+            animation: flowDown 1s linear infinite;
+        }
+        
+        @keyframes flowDown {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 0% 100%; }
+        }
+        
+        .connector-dot {
+            width: 12px;
+            height: 12px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            z-index: 1;
+            animation: flowDot 2s ease-in-out infinite;
+        }
+        
+        @keyframes flowDot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <h1>🦞 MISSION CONTROL</h1>
+            </div>
+            <div class="status-pill">
+                <span class="pulse"></span>
+                <span>LIVE CONNECTION</span>
+            </div>
+        </div>
+    </header>
+    
+    <main class="mission-control">
+        <!-- LEFT: Agent Status -->
+        <aside class="agents-column">
+            <div class="agent-card" id="sherlockAgent">
+                <div class="agent-card::before"></div>
+                <div class="agent-header">
+                    <div class="agent-avatar">🦞</div>
+                    <div>
+                        <h3>Sherlock AI</h3>
+                        <span class="agent-status">ACTIVE • PROCESSING</span>
+                    </div>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Current Task</span>
+                </div>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;" id="currentTask">
+                    Monitoring HQ Dashboard
+                </div>
+            </div>
+            
+            <div class="agent-card" style="margin-top: 16px;">
+                <div class="agent-header">
+                    <div class="agent-avatar" style="background: linear-gradient(135deg, var(--accent-orange), #f59e0b);">👤</div>
+                    <div>
+                        <h3>Lars (You)</h3>
+                        <span class="agent-status" style="background: rgba(255,107,53,0.1); color: var(--accent-orange);">IDLE</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="metrics-card" style="margin-top: 16px;">
+                <div class="section-title">Real-Time Metrics</div>
+                <div class="metric-row">
+                    <span class="metric-label">Tokens / min</span>
+                    <span class="metric-value" id="tokensPerMin">0</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Session Cost</span>
+                    <span class="metric-value cost" id="sessionCost">$0.00</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Active Tools</span>
+                    <span class="metric-value" id="activeTools">0</span>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- CENTER: Live Pipeline -->
+        <section class="pipeline-container">
+            <div class="section-title">Active Workflows</div>
+            
+            <div class="flow-container" id="pipelineFlow">
+                <!-- Flow nodes will be populated by JS -->
+                <div class="flow-node active" id="node1">
+                    <div class="flow-icon processing">⚡</div>
+                    <div class="flow-info">
+                        <h3>MVP Pipeline</h3>
+                        <p>Processing Lis Pendens leads from CSV</p>
+                    </div>
+                    <div class="progress-bar" style="width: 65%;"></div>
+                </div>
+                
+                <div class="flow-connector">
+                    <div class="connector-dot"></div>
+                </div>
+                
+                <div class="flow-node" id="node2">
+                    <div class="flow-icon">🔄</div>
+                    <div class="flow-info">
+                        <h3>Git Push</h3>
+                        <p>Deploying HQ fixes to GitHub</p>
+                    </div>
+                </div>
+                
+                <div class="flow-connector">
+                    <div class="connector-dot"></div>
+                </div>
+                
+                <div class="flow-node" id="node3">
+                    <div class="flow-icon">📊</div>
+                    <div class="flow-info">
+                        <h3>Hot Sheet Scan</h3>
+                        <p>Waiting for daily upload</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Activity Log -->
+            <div class="activity-log">
+                <div class="section-title">Live Activity</div>
+                <div id="activityLog">
+                    <div class="log-entry executing">
+                        <span class="log-time">20:34</span>
+                        <span>Executed git push origin main</span>
+                    </div>
+                    <div class="log-entry complete">
+                        <span class="log-time">20:30</span>
+                        <span>Completed read index.html</span>
+                    </div>
+                    <div class="log-entry complete">
+                        <span class="log-time">20:28</span>
+                        <span>Completed exec git push</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- RIGHT: Visual Charts -->
+        <aside class="charts-column">
+            <div class="pipeline-container" style="height: auto;">
+                <div class="section-title">Token Burn Rate</div>
+                <canvas id="tokenChart"></canvas>
+            </div>
+            
+            <div class="pipeline-container" style="margin-top: 24px; height: auto;">
+                <div class="section-title">Tool Usage</div>
+                <canvas id="toolChart"></canvas>
+            </div>
+        </aside>
+    </main>
+    
+    <script>
+        // Initialize Charts
+        const tokenCtx = document.getElementById('tokenChart').getContext('2d');
+        const toolCtx = document.getElementById('toolChart').getContext('2d');
+        
+        // Token Chart
+        new Chart(tokenCtx, {
+            type: 'line',
+            data: {
+                labels: ['18:00', '18:30', '19:00', '19:30', '20:00', '20:30'],
+                datasets: [{
+                    label: 'Tokens',
+                    data: [0, 500, 1200, 2100, 3200, 4500],
+                    borderColor: '#00f5d4',
+                    backgroundColor: 'rgba(0,245,212,0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#94a3b8', font: { size: 10 } }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8', font: { size: 10 } }
+                    }
+                }
+            }
+        });
+        
+        // Tool Usage Chart
+        new Chart(toolCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['exec', 'read', 'edit', 'browser'],
+                datasets: [{
+                    data: [12, 8, 5, 3],
+                    backgroundColor: ['#00f5d4', '#a855f7', '#ff6b35', '#22d3ee'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 12 }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+        
+        // Dynamic Updates
+        function updateMetrics() {
+            // Simulate live updates
+            const tokens = Math.floor(Math.random() * 200 + 50);
+            document.getElementById('tokensPerMin').textContent = tokens;
+            
+            const cost = (Math.random() * 0.1 + 0.01).toFixed(3);
+            document.getElementById('sessionCost').textContent = '$' + cost;
+            
+            const tools = Math.floor(Math.random() * 3 + 1);
+            document.getElementById('activeTools').textContent = tools;
+        }
+        
+        // Update every 5 seconds
+        setInterval(updateMetrics, 5000);
+        
+        // Add new log entries
+        function addLogEntry(tool, status) {
+            const log = document.getElementById('activityLog');
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${status}`;
+            entry.innerHTML = `<span class="log-time">${time}</span><span>${tool}</span>`;
+            log.insertBefore(entry, log.firstChild);
+            if (log.children.length > 10) log.removeChild(log.lastChild);
+        }
+        
+        // Simulate activity
+        setInterval(() => {
+            const tools = ['exec', 'read', 'edit', 'browser', 'web_fetch'];
+            const statuses = ['executing', 'complete', 'complete'];
+            const randomTool = tools[Math.floor(Math.random() * tools.length)];
+            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+            addLogEntry(randomTool, randomStatus);
+        }, 8000);
+    </script>
+</body>
+</html>

@@ -3,614 +3,601 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Office | Sherlock Mission Control</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>🦞 Sherlock Mission Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-dark: #0a0a0f;
-            --bg-card: #12121a;
-            --accent-cyan: #00f5d4;
-            --accent-orange: #ff6b35;
-            --accent-purple: #a855f7;
-            --accent-green: #22d3ee;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
+            --bg: #0a0a0f;
+            --card: #12121a;
+            --card-light: #1a1a25;
+            --cyan: #00f5d4;
+            --cyan-glow: 0 0 20px rgba(0,245,212,0.3);
+            --purple: #a855f7;
+            --orange: #f97316;
+            --green: #22c55e;
+            --red: #ef4444;
+            --blue: #3b82f6;
+            --text: #f8fafc;
+            --text-muted: #64748b;
             --border: rgba(255,255,255,0.08);
         }
         
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
-            background: var(--bg-dark);
-            color: var(--text-primary);
+            background: var(--bg);
+            color: var(--text);
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
-            overflow-x: hidden;
+            overflow: hidden;
         }
         
-        /* Grid Background */
-        .grid-bg {
+        .grid {
             position: fixed;
             inset: 0;
-            background-image: 
+            background: 
                 linear-gradient(rgba(0,245,212,0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0,245,212,0.03) 1px, transparent 1px);
             background-size: 50px 50px;
+            animation: grid 30s linear infinite;
             pointer-events: none;
-            animation: gridMove 20s linear infinite;
+            z-index: 0;
+        }
+        @keyframes grid {
+            from { transform: perspective(1000px) rotateX(55deg) translateY(0); }
+            to { transform: perspective(1000px) rotateX(55deg) translateY(50px); }
         }
         
-        @keyframes gridMove {
-            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
-            100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
-        }
-        
-        /* Header */
-        .header {
-            background: linear-gradient(180deg, rgba(18,18,26,0.95) 0%, transparent 100%);
-            backdrop-filter: blur(10px);
-            padding: 20px 30px;
+        header {
+            background: rgba(18,18,26,0.95);
+            backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             position: relative;
             z-index: 100;
         }
         
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1800px;
-            margin: 0 auto;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .logo h1 {
+        .brand { display: flex; align-items: center; gap: 14px; }
+        .brand-icon {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
             font-size: 24px;
+            animation: iconPulse 2s ease-in-out infinite;
+            box-shadow: var(--cyan-glow);
+        }
+        @keyframes iconPulse {
+            50% { transform: scale(1.08); box-shadow: 0 0 40px rgba(0,245,212,0.5); }
+        }
+        
+        h1 {
+            font-size: 18px;
             font-weight: 800;
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            background: linear-gradient(135deg, var(--cyan), white);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
         
-        .status-pill {
+        .live-status {
             display: flex;
             align-items: center;
             gap: 8px;
-            background: rgba(34,211,238,0.1);
-            border: 1px solid rgba(34,211,238,0.3);
-            padding: 8px 16px;
-            border-radius: 20px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
+            font-size: 11px;
+            color: var(--green);
         }
-        
-        .pulse {
-            width: 8px;
-            height: 8px;
-            background: var(--accent-green);
+        .live-dot {
+            width: 8px; height: 8px;
+            background: var(--green);
             border-radius: 50%;
-            animation: pulse 1.5s ease-in-out infinite;
+            animation: livePulse 0.6s ease-in-out infinite;
         }
+        @keyframes livePulse { 50% { opacity: 0.3; transform: scale(1.3); } }
         
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
-        }
-        
-        /* Main Grid */
-        .mission-control {
+        /* MAIN LAYOUT */
+        .control-center {
             display: grid;
-            grid-template-columns: 300px 1fr 350px;
-            gap: 24px;
-            padding: 24px;
+            grid-template-columns: 260px 1fr 300px;
+            gap: 16px;
+            padding: 16px;
             max-width: 1800px;
             margin: 0 auto;
+            height: calc(100vh - 76px);
             position: relative;
             z-index: 10;
         }
         
-        /* Agent Status Cards */
-        .agent-card {
-            background: var(--bg-card);
+        .panel { display: flex; flex-direction: column; gap: 12px; }
+        
+        /* CARDS */
+        .card {
+            background: var(--card);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
+            border-radius: 12px;
+            padding: 16px;
             position: relative;
-            overflow: hidden;
         }
         
-        .agent-card::before {
+        .card-glow::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
-            animation: shimmer 3s ease-in-out infinite;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--cyan), var(--purple));
+            animation: borderFlow 2s linear infinite;
+        }
+        @keyframes borderFlow {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(100%); }
         }
         
-        @keyframes shimmer {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-        
+        /* AGENT CARD */
         .agent-header {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
-        
         .agent-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 48px; height: 48px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
             font-size: 24px;
-            animation: agentPulse 2s ease-in-out infinite;
+        }
+        .agent-avatar.sherlock {
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            animation: avatarGlow 3s ease-in-out infinite;
+        }
+        @keyframes avatarGlow {
+            50% { box-shadow: 0 0 30px 8px rgba(0,245,212,0.3); }
         }
         
-        @keyframes agentPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(0,245,212,0.4); }
-            50% { box-shadow: 0 0 0 10px rgba(0,245,212,0); }
-        }
-        
-        .agent-status {
+        .agent-status { display: flex; flex-direction: column; }
+        .agent-status h3 { font-size: 14px; font-weight: 600; }
+        .status-badge {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            color: var(--accent-green);
-            background: rgba(34,211,238,0.1);
-            padding: 4px 8px;
-            border-radius: 4px;
+            font-size: 10px;
+            color: var(--green);
+            background: rgba(34,197,94,0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
             margin-top: 4px;
         }
         
-        /* Live Pipeline Flow */
-        .pipeline-container {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            min-height: 600px;
+        .current-task {
+            background: var(--card-light);
+            border-radius: 8px;
+            padding: 10px;
+            border-left: 2px solid var(--cyan);
         }
-        
-        .section-title {
-            font-size: 14px;
-            font-weight: 600;
+        .task-label {
+            font-size: 9px;
+            color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: var(--text-secondary);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
+        }
+        #currentTask {
+            font-size: 12px;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+        
+        /* METRICS */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 8px;
         }
-        
-        .section-title::before {
-            content: '◉';
-            color: var(--accent-cyan);
-            animation: blink 1s ease-in-out infinite;
+        .metric-box {
+            background: var(--card-light);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--cyan);
+        }
+        .metric-value.cost { color: var(--orange); }
+        .metric-value.warn { color: var(--red); }
+        .metric-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
         }
         
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-        
-        /* Flow Nodes */
-        .flow-container {
+        /* PIPELINE */
+        .pipeline-container {
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            margin-top: 20px;
+            gap: 10px;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
         }
         
         .flow-node {
-            background: linear-gradient(135deg, rgba(0,245,212,0.05), rgba(168,85,247,0.05));
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
+            background: linear-gradient(90deg, rgba(0,245,212,0.05), transparent);
+            border: 1px solid rgba(0,245,212,0.2);
+            border-radius: 10px;
+            padding: 14px;
             display: flex;
             align-items: center;
-            gap: 16px;
-            position: relative;
+            gap: 14px;
             transition: all 0.3s ease;
         }
-        
+        .flow-node:hover {
+            border-color: rgba(0,245,212,0.4);
+            transform: translateX(4px);
+        }
         .flow-node.active {
-            border-color: var(--accent-cyan);
-            background: linear-gradient(135deg, rgba(0,245,212,0.1), rgba(168,85,247,0.1));
-            animation: nodeActive 2s ease-in-out infinite;
+            border-color: var(--cyan);
+            background: linear-gradient(90deg, rgba(0,245,212,0.1), rgba(168,85,247,0.05));
+            animation: nodePulse 1.5s ease-in-out infinite;
+        }
+        @keyframes nodePulse {
+            50% { box-shadow: 0 0 30px rgba(0,245,212,0.3); }
         }
         
-        @keyframes nodeActive {
-            0%, 100% { box-shadow: 0 0 20px rgba(0,245,212,0.2); }
-            50% { box-shadow: 0 0 40px rgba(0,245,212,0.4); }
-        }
-        
-        .flow-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
+        .node-icon {
+            width: 40px; height: 40px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
             background: rgba(0,245,212,0.1);
         }
-        
-        .flow-icon.processing {
+        .flow-node.active .node-icon {
             animation: spin 1s linear infinite;
         }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .flow-info h3 {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .flow-info p {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-        
-        .progress-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
-            border-radius: 0 0 12px 12px;
-            transition: width 0.3s ease;
-        }
-        
-        /* Real-time Metrics */
-        .metrics-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-        }
-        
-        .metric-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .metric-row:last-child { border-bottom: none; }
-        
-        .metric-label {
+        .node-content { flex: 1; }
+        .node-title {
             font-size: 13px;
-            color: var(--text-secondary);
-        }
-        
-        .metric-value {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 18px;
             font-weight: 600;
-            color: var(--accent-cyan);
+        }
+        .node-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
         }
         
-        .metric-value.cost {
-            color: var(--accent-orange);
+        .progress-mini {
+            width: 60px;
+            height: 3px;
+            background: var(--card-light);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--cyan), var(--purple));
+            animation: progressMove 2s ease-in-out infinite;
+        }
+        @keyframes progressMove {
+            0% { width: 30%; }
+            50% { width: 70%; }
+            100% { width: 30%; }
         }
         
-        /* Activity Log */
-        .activity-log {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            margin-top: 24px;
-            max-height: 400px;
+        /* ACTIVITY LOG */
+        .log-container {
+            height: 200px;
             overflow-y: auto;
         }
-        
         .log-entry {
             display: flex;
-            gap: 12px;
-            padding: 12px;
-            border-left: 2px solid var(--accent-cyan);
-            margin-bottom: 8px;
+            gap: 10px;
+            padding: 8px;
+            border-radius: 6px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            background: rgba(0,245,212,0.03);
+            font-size: 11px;
+            margin-bottom: 4px;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
         }
         
-        .log-entry.executing { border-left-color: var(--accent-orange); }
-        .log-entry.complete { border-left-color: var(--accent-green); }
+        .log-entry.exec { background: rgba(249,115,22,0.08); border-left: 2px solid var(--orange); }
+        .log-entry.read { background: rgba(59,130,246,0.08); border-left: 2px solid var(--blue); }
+        .log-entry.edit { background: rgba(168,85,247,0.08); border-left: 2px solid var(--purple); }
+        .log-entry.browser { background: rgba(0,245,212,0.08); border-left: 2px solid var(--cyan); }
+        .log-entry.web { background: rgba(255,255,255,0.05); border-left: 2px solid var(--text-muted); }
         
-        .log-time {
-            color: var(--text-secondary);
-            min-width: 60px;
+        .log-time { color: var(--text-muted); min-width: 40px; font-size: 10px; }
+        .log-type { 
+            color: var(--cyan); 
+            min-width: 50px; 
+            font-weight: 600;
+            text-transform: uppercase;
         }
         
-        /* Connection Lines */
-        .flow-connector {
-            position: relative;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .flow-connector::before {
-            content: '';
-            position: absolute;
-            width: 2px;
-            height: 100%;
-            background: linear-gradient(180deg, var(--accent-cyan), var(--accent-purple));
-            animation: flowDown 1s linear infinite;
-        }
-        
-        @keyframes flowDown {
-            0% { background-position: 0% 0%; }
-            100% { background-position: 0% 100%; }
-        }
-        
-        .connector-dot {
-            width: 12px;
-            height: 12px;
-            background: var(--accent-cyan);
-            border-radius: 50%;
-            z-index: 1;
-            animation: flowDot 2s ease-in-out infinite;
-        }
-        
-        @keyframes flowDot {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.5); opacity: 0.5; }
-        }
+        canvas { max-height: 200px; }
     </style>
 </head>
 <body>
-    <div class="grid-bg"></div>
+    <div class="grid"></div>
     
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <h1>🦞 MISSION CONTROL</h1>
-            </div>
-            <div class="status-pill">
-                <span class="pulse"></span>
-                <span>LIVE CONNECTION</span>
-            </div>
+    <header>
+        <div class="brand">
+            <div class="brand-icon">🦞</div>
+            <h1>MISSION CONTROL</h1>
+        </div>
+        <div class="live-status">
+            <span class="live-dot"></span>
+            <span id="connectionStatus">LIVE CONNECTION</span>
         </div>
     </header>
     
-    <main class="mission-control">
-        <!-- LEFT: Agent Status -->
-        <aside class="agents-column">
-            <div class="agent-card" id="sherlockAgent">
-                <div class="agent-card::before"></div>
+    <div class="control-center">
+        <!-- LEFT: Agents & Metrics -->
+        <div class="panel">
+            <div class="card card-glow">
                 <div class="agent-header">
-                    <div class="agent-avatar">🦞</div>
-                    <div>
-                        <h3>Sherlock AI</h3>
-                        <span class="agent-status">ACTIVE • PROCESSING</span>
+                    <div class="agent-avatar sherlock">🦞</div>
+                    <div class="agent-status">
+                        <h3>Sherlock</h3>
+                        <span class="status-badge">ACTIVE</span>
                     </div>
                 </div>
-                <div class="metric-row">
-                    <span class="metric-label">Current Task</span>
-                </div>
-                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;" id="currentTask">
-                    Monitoring HQ Dashboard
+                <div class="current-task">
+                    <div class="task-label">Current Task</div>
+                    <div id="currentTask">Monitoring systems...</div>
                 </div>
             </div>
             
-            <div class="agent-card" style="margin-top: 16px;">
+            <div class="card">
                 <div class="agent-header">
-                    <div class="agent-avatar" style="background: linear-gradient(135deg, var(--accent-orange), #f59e0b);">👤</div>
-                    <div>
-                        <h3>Lars (You)</h3>
-                        <span class="agent-status" style="background: rgba(255,107,53,0.1); color: var(--accent-orange);">IDLE</span>
+                    <div class="agent-avatar" style="background:linear-gradient(135deg,var(--orange),#fbbf24);">👤</div>
+                    <div class="agent-status">
+                        <h3>Lars</h3>
+                        <span class="status-badge" style="background:rgba(249,115,22,0.1);color:var(--orange);">IDLE</span>
                     </div>
                 </div>
             </div>
             
-            <div class="metrics-card" style="margin-top: 16px;">
-                <div class="section-title">Real-Time Metrics</div>
-                <div class="metric-row">
-                    <span class="metric-label">Tokens / min</span>
-                    <span class="metric-value" id="tokensPerMin">0</span>
-                </div>
-                <div class="metric-row">
-                    <span class="metric-label">Session Cost</span>
-                    <span class="metric-value cost" id="sessionCost">$0.00</span>
-                </div>
-                <div class="metric-row">
-                    <span class="metric-label">Active Tools</span>
-                    <span class="metric-value" id="activeTools">0</span>
+            <div class="card">
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <div class="metric-value" id="tokensPerMin">0</div>
+                        <div class="metric-label">Tokens/min</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value cost" id="sessionCost">$0.00</div>
+                        <div class="metric-label">Session Cost</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value" id="totalTokens">0</div>
+                        <div class="metric-label">Total</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value" id="cacheHits">0%</div>
+                        <div class="metric-label">Cache</div>
+                    </div>
                 </div>
             </div>
-        </aside>
+        </div>
         
-        <!-- CENTER: Live Pipeline -->
-        <section class="pipeline-container">
-            <div class="section-title">Active Workflows</div>
-            
-            <div class="flow-container" id="pipelineFlow">
-                <!-- Flow nodes will be populated by JS -->
-                <div class="flow-node active" id="node1">
-                    <div class="flow-icon processing">⚡</div>
-                    <div class="flow-info">
-                        <h3>MVP Pipeline</h3>
-                        <p>Processing Lis Pendens leads from CSV</p>
-                    </div>
-                    <div class="progress-bar" style="width: 65%;"></div>
+        <!-- CENTER: Pipeline & Logs -->
+        <div class="panel">
+            <div class="card" style="flex:1;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <span style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Active Workflows</span>
+                    <span class="live-dot"></span>
                 </div>
-                
-                <div class="flow-connector">
-                    <div class="connector-dot"></div>
-                </div>
-                
-                <div class="flow-node" id="node2">
-                    <div class="flow-icon">🔄</div>
-                    <div class="flow-info">
-                        <h3>Git Push</h3>
-                        <p>Deploying HQ fixes to GitHub</p>
-                    </div>
-                </div>
-                
-                <div class="flow-connector">
-                    <div class="connector-dot"></div>
-                </div>
-                
-                <div class="flow-node" id="node3">
-                    <div class="flow-icon">📊</div>
-                    <div class="flow-info">
-                        <h3>Hot Sheet Scan</h3>
-                        <p>Waiting for daily upload</p>
-                    </div>
-                </div>
+                <div class="pipeline-container" id="workflows"></div>
             </div>
             
-            <!-- Activity Log -->
-            <div class="activity-log">
-                <div class="section-title">Live Activity</div>
-                <div id="activityLog">
-                    <div class="log-entry executing">
-                        <span class="log-time">20:34</span>
-                        <span>Executed git push origin main</span>
-                    </div>
-                    <div class="log-entry complete">
-                        <span class="log-time">20:30</span>
-                        <span>Completed read index.html</span>
-                    </div>
-                    <div class="log-entry complete">
-                        <span class="log-time">20:28</span>
-                        <span>Completed exec git push</span>
-                    </div>
-                </div>
+            <div class="card">
+                <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Live Activity</div>
+                <div class="log-container" id="logContainer"></div>
             </div>
-        </section>
+        </div>
         
-        <!-- RIGHT: Visual Charts -->
-        <aside class="charts-column">
-            <div class="pipeline-container" style="height: auto;">
-                <div class="section-title">Token Burn Rate</div>
+        <!-- RIGHT: Charts -->
+        <div class="panel">
+            <div class="card">
+                <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Token Burn</div>
                 <canvas id="tokenChart"></canvas>
             </div>
-            
-            <div class="pipeline-container" style="margin-top: 24px; height: auto;">
-                <div class="section-title">Tool Usage</div>
+            <div class="card">
+                <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Tool Distribution</div>
                 <canvas id="toolChart"></canvas>
             </div>
-        </aside>
-    </main>
+            <div class="card">
+                <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Context Usage</div>
+                <div style="position:relative;height:20px;background:var(--card-light);border-radius:4px;overflow:hidden;">
+                    <div id="contextBar" style="position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,var(--cyan),var(--purple));width:0%;transition:width 0.5s ease;"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-top:8px;">
+                    <span style="font-family:JetBrains Mono;font-size:11px;color:var(--text-muted);"><span id="contextUsed">0</span>k / 262k</span>
+                    <span id="contextPercent" style="font-family:JetBrains Mono;font-size:11px;color:var(--cyan);">0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script>
-        // Initialize Charts
-        const tokenCtx = document.getElementById('tokenChart').getContext('2d');
-        const toolCtx = document.getElementById('toolChart').getContext('2d');
+        // === REAL-TIME DATA FETCHING ===
+        const GATEWAY_URL = 'http://127.0.0.1:18789';
         
-        // Token Chart
-        new Chart(tokenCtx, {
-            type: 'line',
-            data: {
-                labels: ['18:00', '18:30', '19:00', '19:30', '20:00', '20:30'],
-                datasets: [{
-                    label: 'Tokens',
-                    data: [0, 500, 1200, 2100, 3200, 4500],
-                    borderColor: '#00f5d4',
-                    backgroundColor: 'rgba(0,245,212,0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { 
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#94a3b8', font: { size: 10 } }
-                    },
-                    x: { 
-                        grid: { display: false },
-                        ticks: { color: '#94a3b8', font: { size: 10 } }
-                    }
+        let sessionData = {
+            tokens: { in: 0, out: 0, cached: 0 },
+            cost: 0,
+            tools: { exec: 0, read: 0, edit: 0, browser: 0, web: 0 },
+            context: { used: 0, total: 262000 },
+            activities: []
+        };
+        
+        const toolColors = {
+            exec: '#f97316',
+            read: '#3b82f6', 
+            edit: '#a855f7',
+            browser: '#00f5d4',
+            web: '#94a3b8'
+        };
+        
+        // Fetch real session status
+        async function fetchSessionStatus() {
+            try {
+                const response = await fetch(`${GATEWAY_URL}/api/status`);
+                if (!response.ok) throw new Error('Status fetch failed');
+                const data = await response.json();
+                updateDashboard(data);
+                document.getElementById('connectionStatus').textContent = 'LIVE CONNECTION';
+            } catch (e) {
+                console.error('Failed to fetch status:', e);
+                document.getElementById('connectionStatus').textContent = 'RECONNECTING...';
+                document.getElementById('connectionStatus').style.color = '#f97316';
+            }
+        }
+        
+        function updateDashboard(data) {
+            // Update metrics
+            if (data.tokens) {
+                document.getElementById('tokensPerMin').textContent = Math.round(data.tokens.perMin || 0);
+                document.getElementById('totalTokens').textContent = (data.tokens.in / 1000).toFixed(1) + 'k';
+                document.getElementById('sessionCost').textContent = '$' + data.cost.toFixed(2);
+                document.getElementById('cacheHits').textContent = data.cache.percent + '%';
+            }
+            
+            // Update context bar
+            if (data.context) {
+                const percent = Math.round((data.context.used / data.context.total) * 100);
+                document.getElementById('contextUsed').textContent = (data.context.used / 1000).toFixed(0);
+                document.getElementById('contextPercent').textContent = percent + '%';
+                document.getElementById('contextBar').style.width = percent + '%';
+                
+                if (percent > 80) {
+                    document.getElementById('contextBar').style.background = 'linear-gradient(90deg,#ef4444,#f97316)';
+                    document.getElementById('contextPercent').style.color = '#ef4444';
                 }
             }
-        });
-        
-        // Tool Usage Chart
-        new Chart(toolCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['exec', 'read', 'edit', 'browser'],
-                datasets: [{
-                    data: [12, 8, 5, 3],
-                    backgroundColor: ['#00f5d4', '#a855f7', '#ff6b35', '#22d3ee'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 12 }
-                    }
-                },
-                cutout: '65%'
+            
+            // Update current task
+            if (data.currentTask) {
+                document.getElementById('currentTask').textContent = data.currentTask;
             }
-        });
-        
-        // Dynamic Updates
-        function updateMetrics() {
-            // Simulate live updates
-            const tokens = Math.floor(Math.random() * 200 + 50);
-            document.getElementById('tokensPerMin').textContent = tokens;
-            
-            const cost = (Math.random() * 0.1 + 0.01).toFixed(3);
-            document.getElementById('sessionCost').textContent = '$' + cost;
-            
-            const tools = Math.floor(Math.random() * 3 + 1);
-            document.getElementById('activeTools').textContent = tools;
         }
         
-        // Update every 5 seconds
-        setInterval(updateMetrics, 5000);
-        
-        // Add new log entries
-        function addLogEntry(tool, status) {
-            const log = document.getElementById('activityLog');
-            const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+        // Add activity log entry
+        function addLog(tool, message) {
+            const container = document.getElementById('logContainer');
+            const time = new Date().toLocaleTimeString('en-US', {hour12:0,hour:'2-digit',minute:'2-digit'});
             const entry = document.createElement('div');
-            entry.className = `log-entry ${status}`;
-            entry.innerHTML = `<span class="log-time">${time}</span><span>${tool}</span>`;
-            log.insertBefore(entry, log.firstChild);
-            if (log.children.length > 10) log.removeChild(log.lastChild);
+            entry.className = `log-entry ${tool}`;
+            entry.innerHTML = `<span class="log-time">${time}</span><span class="log-type">${tool}</span><span>${message}</span>`;
+            container.insertBefore(entry, container.firstChild);
+            if (container.children.length > 20) container.removeChild(container.lastChild);
+            
+            // Update session tools count
+            sessionData.tools[tool] = (sessionData.tools[tool] || 0) + 1;
         }
         
-        // Simulate activity
+        // Render workflows
+        function renderWorkflows() {
+            const container = document.getElementById('workflows');
+            const workflows = [
+                { icon: '⚡', name: 'MVP Pipeline', desc: data: result, result , active: true },
+                { icon: '🔄', name: 'Git Operations', desc: 'Deploying updates', active: false },
+                { icon: '📊', name: 'Data Processing', desc: 'Analyzing leads', active: false }
+            ];
+            
+            container.innerHTML = workflows.map(w => `
+                <div class="flow-node ${w.active ? 'active' : ''}">
+                    <div class="node-icon">${w.icon}</div>
+                    <div class="node-content">
+                        <div class="node-title">${w.name}</div>
+                        <div class="node-desc">${w.desc}</div>
+                        ${w.active ? '<div class="progress-mini"><div class="progress-fill"></div></div>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Initialize charts
+        function initCharts() {
+            // Token line chart
+            const ctx1 = document.getElementById('tokenChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: Array(10).fill('').map((_,i) => i),
+                    datasets: [{
+                        data: [0,45,89,134,178,234,289,345,401,456],
+                        borderColor: '#00f5d4',
+                        backgroundColor: 'rgba(0,245,212,0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false, min: 0 }
+                    }
+                }
+            });
+            
+            // Tool doughnut
+            const ctx2 = document.getElementById('toolChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['exec','read','edit','browser','web'],
+                    datasets: [{
+                        data: [5,8,3,2,1],
+                        backgroundColor: ['#f97316','#3b82f6','#a855f7','#00f5d4','#94a3b8']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#94a3b8', font: {size:9}, boxWidth: 8, padding: 8 }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Start
+        initCharts();
+        renderWorkflows();
+        
+        // Poll every 2 seconds
+        fetchSessionStatus();
+        setInterval(fetchSessionStatus, 2000);
+        
+        // Simulated activity (remove when real API provides this)
         setInterval(() => {
-            const tools = ['exec', 'read', 'edit', 'browser', 'web_fetch'];
-            const statuses = ['executing', 'complete', 'complete'];
-            const randomTool = tools[Math.floor(Math.random() * tools.length)];
-            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-            addLogEntry(randomTool, randomStatus);
+            const tools = ['exec','read','edit','browser'];
+            const messages = {
+                exec: ['git push','npm install','docker build'],
+                read: ['index.html','config.json','data.csv'],
+                edit: ['Updated styles.css','Modified app.js','Fixed typo'],
+                browser: ['Navigated to HQ','Snapshot taken','Clicked element']
+            };
+            const tool = tools[Math.floor(Math.random()*tools.length)];
+            const msg = messages[tool][Math.floor(Math.random()*messages[tool].length)];
+            addLog(tool, msg);
         }, 8000);
     </script>
 </body>
