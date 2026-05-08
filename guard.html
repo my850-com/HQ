@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 BRG | Secure Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            background: #0a0a0f;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .grid {
+            position: fixed; inset: 0;
+            background: linear-gradient(rgba(0,245,212,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,245,212,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: grid 20s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes grid {
+            from { transform: perspective(1000px) rotateX(55deg) translateY(0); }
+            to { transform: perspective(1000px) rotateX(55deg) translateY(60px); }
+        }
+        .login-card {
+            background: linear-gradient(135deg, #12121a, #1a1a25);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 48px;
+            width: 100%;
+            max-width: 420px;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+        .brand {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .brand-icon {
+            width: 64px; height: 64px;
+            background: linear-gradient(135deg, #00f5d4, #a855f7);
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 16px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 
+            0%,100% { box-shadow: 0 0 20px rgba(0,245,212,0.3); }
+            50% { box-shadow: 0 0 40px rgba(0,245,212,0.5); }
+        }
+        .brand h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+        .brand p { color: #64748b; font-size: 13px; margin-top: 4px; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px; }
+        input {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 14px 16px;
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        input:focus { border-color: #00f5d4; box-shadow: 0 0 20px rgba(0,245,212,0.2); }
+        input::placeholder { color: #475569; }
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #00f5d4, #a855f7);
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            color: #0a0a0f;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,245,212,0.3); }
+        button:active { transform: translateY(0); }
+        .error {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 16px;
+            color: #ef4444;
+            font-size: 13px;
+            text-align: center;
+            display: none;
+        }
+        .error.show { display: block; }
+        .version { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); color: #475569; font-size: 11px; font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body>
+    <div class="grid"></div>
+    <div class="login-card">
+        <div class="brand">
+            <div class="brand-icon">🦞</div>
+            <h1>BRG Mission Control</h1>
+            <p>Authorized Personnel Only</p>
+        </div>
+        <div class="input-group">
+            <label>Access Code</label>
+            <input type="password" id="password" placeholder="Enter password..." onkeyup="if(event.key==='Enter')checkAuth()">
+        </div>
+        <button onclick="checkAuth()">Access Systems</button>
+        <div class="error" id="error">Access Denied • Invalid Credentials</div>
+    </div>
+    <div class="version">v2.0 • Secure Session Required</div>
+    
+    <script>
+        const CORRECT_PASSWORD = 'Sherlock';
+        
+        function checkAuth() {
+            const input = document.getElementById('password').value;
+            const error = document.getElementById('error');
+            
+            if (input === CORRECT_PASSWORD) {
+                sessionStorage.setItem('brg_auth', 'granted_' + Date.now());
+                const target = new URLSearchParams(window.location.search).get('to') || 'index.html';
+                window.location.href = target;
+            } else {
+                error.classList.add('show');
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+                setTimeout(() => error.classList.remove('show'), 3000);
+            }
+        }
+    </script>
+</body>
+</html>
