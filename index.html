@@ -439,5 +439,64 @@
         setInterval(updateMetricCounts, 2 * 60 * 1000);
         setInterval(fetchWeather, 10 * 60 * 1000);
     </script>
+    
+    <!-- Priority Leads Table Loader -->
+    <script>
+    async function loadPriorityLeads() {
+        try {
+            console.log('Loading priority leads...');
+            const leads = await DataConnector.getData('buyerLeads');
+            const tbody = document.getElementById('leadsTableBody');
+            
+            if (!leads || leads.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="loading-cell">No leads found</td></tr>';
+                return;
+            }
+            
+            // Sort by priority (Hot > Warm > Cold), then by date
+            leads.sort((a, b) => {
+                const priorityOrder = { 'Hot': 3, 'Warm': 2, 'Cold': 1 };
+                const priorityA = priorityOrder[(a.Priority || 'Cold').trim()] || 0;
+                const priorityB = priorityOrder[(b.Priority || 'Cold').trim()] || 0;
+                if (priorityB !== priorityA) return priorityB - priorityA;
+                return new Date(b['Date Created'] || 0) - new Date(a['Date Created'] || 0);
+            });
+            
+            // Take top 10
+            const topLeads = leads.slice(0, 10);
+            
+            tbody.innerHTML = topLeads.map(lead => {
+                const priority = (lead.Priority || 'Cold').trim();
+                const badgeClass = priority === 'Hot' ? 'hot' : priority === 'Warm' ? 'warm' : 'cold';
+                const phone = lead.Phone || '';
+                const phoneDigits = phone.replace(/\D/g, '');
+                
+                return `<tr>
+                    <td><span class="badge badge-${badgeClass}">${priority}</span></td>
+                    <td>${lead.Name || ''}</td>
+                    <td>${lead['Property Type'] || lead.Location || ''}</td>
+                    <td>${phone ? `<a href="tel:${phoneDigits}" class="phone-link">${phone}</a>` : '-'}</td>
+                    <td>-</td>
+                    <td>${lead.Location ? lead.Location.split(' ').pop() : '-'}</td>
+                    <td>New</td>
+                    <td>${lead.Source || '-'}</td>
+                    <td>${phoneDigits ? `<button class="btn btn-sm" onclick="window.location.href='tel:${phoneDigits}'">📞</button>` : '-'}</td>
+                </tr>`;
+            }).join('');
+            
+            console.log('Priority leads loaded:', topLeads.length);
+            
+        } catch (e) {
+            console.error('Error loading priority leads:', e);
+            document.getElementById('leadsTableBody').innerHTML = 
+                '<tr><td colspan="9" class="loading-cell">Error. <button onclick="loadPriorityLeads()">Retry</button></td></tr>';
+        }
+    }
+
+    // Load after DOM ready
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(loadPriorityLeads, 2000);
+    });
+    </script>
 </body>
 </html>
