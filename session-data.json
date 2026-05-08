@@ -1,0 +1,34 @@
+{
+  "lastUpdate": "2026-05-07T21:20:00Z",
+  "mode": "LIVE",
+  "session": {
+    "tokensIn": 562000,
+    "tokensOut": 5200,
+    "tokensCached": 108000,
+    "cost": 0.30,
+    "contextUsed": 109000,
+    "contextTotal": 262144,
+    "cacheHitPercent": 50
+  },
+  "currentTask": "Building Mission Control dashboard",
+  "workflows": [
+    { "name": "MVP Pipeline", "status": "Processing", "progress": 65, "active": true },
+    { "name": "Git Operations", "status": "Idle", "progress": 0, "active": false },
+    { "name": "Data Processing", "status": "Queued", "progress": 0, "active": false }
+  ],
+  "recentActivity": [
+    { "time": "21:19", "tool": "exec", "message": "git push origin main" },
+    { "time": "21:17", "tool": "write", "message": "Created office-v3.html" },
+    { "time": "21:14", "tool": "browser", "message": "Snapshot HQ dashboard" },
+    { "time": "21:10", "tool": "read", "message": "index.html" },
+    { "time": "21:08", "tool": "edit", "message": "Updated MEMORY.md" }
+  ],
+  "tools": {
+    "exec": 12,
+    "read": 24,
+    "edit": 18,
+    "write": 8,
+    "browser": 6,
+    "image": 3
+  }
+}
